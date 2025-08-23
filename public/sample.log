@@ -1,0 +1,21 @@
+
+0:00 Session started on http://localhost:3000/dashboard
+0:00 ----- Screen Recording Start -----
+0:12 Clicked Create Postadata-slot="button"class="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-9 px-4 py-2 has-[>svg]:px-3 w-full justify-start"href="/dashboard/posts/new"
+0:13 GET http://localhost:3000/dashboard/posts/new?_rsc=1w4d7 404
+0:13 GET http://localhost:3000/dashboard/posts/new?_rsc=1w4d7 404
+0:13 Clicked Manage Usersadata-slot="button"class="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-9 px-4 py-2 has-[>svg]:px-3 w-full justify-start"href="/dashboard/users"
+0:13 GET http://localhost:3000/dashboard/users?_rsc=1w4d7 net::ERR_ABORTED
+0:13 Navigated to http://localhost:3000/dashboard/posts/new
+0:13 GET http://localhost:3000/dashboard/posts/new 404
+0:13 Clicked 404...htmllang="en"class="light"style="color-scheme: light;"
+0:13 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+0:14 Reloaded http://localhost:3000/dashboard/posts/new
+0:15 [Fast Refresh] rebuilding
+0:15 [Fast Refresh] done in 316ms
+0:16 Navigated to http://localhost:3000/dashboard
+0:17 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+0:17 Reloaded http://localhost:3000/dashboard
+0:18 [Fast Refresh] rebuilding
+0:19 ----- Screen Recording End -----
+0:19 Session ended
