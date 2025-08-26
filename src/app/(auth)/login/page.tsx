@@ -30,13 +30,13 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false,
+        redirect: true,
+        callbackUrl: '/bug-capture',
       });
 
+      // If we get here, there was an error (successful login redirects automatically)
       if (result?.error) {
         setError('Invalid email or password');
-      } else if (result?.ok) {
-        router.push('/bug-capture');
       }
     } catch (err) {
       setError('An unexpected error occurred');

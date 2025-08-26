@@ -68,10 +68,7 @@ export const { auth, handlers } = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // After successful login, redirect to bug capture page
-      if (url.startsWith(baseUrl)) {
-        return `${baseUrl}/bug-capture`;
-      }
+      // Allow NextAuth to handle redirects naturally
       return url;
     },
   },
