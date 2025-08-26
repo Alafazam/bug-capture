@@ -11,9 +11,9 @@ const openai = new OpenAI({
 // Initialize Jira
 const jira = new JiraApi({
   protocol: 'https',
-  host: process.env.JIRA_HOST,
-  username: process.env.JIRA_EMAIL,
-  password: process.env.JIRA_API_TOKEN,
+  host: process.env.JIRA_HOST || '',
+  username: process.env.JIRA_EMAIL || '',
+  password: process.env.JIRA_API_TOKEN || '',
   apiVersion: '3',
   strictSSL: true
 });
