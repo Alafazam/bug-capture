@@ -86,7 +86,7 @@ Given technical analysis and Jira field schema, return JSON:
 Create suggestions for:`;
 
 // Agent 1: Analyze Logs Function
-async function analyzeLogsWithAgent1(logs, context) {
+async function analyzeLogsWithAgent1(logs: string, context: Record<string, unknown>) {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4",
@@ -113,7 +113,7 @@ async function analyzeLogsWithAgent1(logs, context) {
 }
 
 // Agent 2: Create Issue Suggestions Function
-async function createIssueWithAgent2(analysis, jiraFields, projectContext) {
+async function createIssueWithAgent2(analysis: Record<string, unknown>, jiraFields: Record<string, unknown>, projectContext: Record<string, unknown>) {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4", 
@@ -138,7 +138,7 @@ async function createIssueWithAgent2(analysis, jiraFields, projectContext) {
 }
 
 // Main API Handler
-export default async function handler(req, res) {
+export default async function handler(req: any, res: any) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
