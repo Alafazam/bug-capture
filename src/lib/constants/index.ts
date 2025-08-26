@@ -1,9 +1,9 @@
 // Application constants
 export const APP_CONFIG = {
-  name: 'Next.js Boilerplate',
+  name: 'Bug Capture Mockup App',
   version: '1.0.0',
-  description: 'A modern Next.js 15 boilerplate with comprehensive features',
-  author: 'Your Name',
+  description: 'A comprehensive bug capture and testing platform for cross-browser testing and issue reporting',
+  author: 'Bug Capture Team',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
 } as const;
 

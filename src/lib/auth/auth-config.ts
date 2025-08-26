@@ -49,6 +49,10 @@ export const { auth, handlers } = NextAuth({
   session: {
     strategy: 'jwt',
   },
+  pages: {
+    signIn: '/login',
+    signUp: '/register',
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -64,10 +68,13 @@ export const { auth, handlers } = NextAuth({
       }
       return session;
     },
-  },
-  pages: {
-    signIn: '/login',
-    signUp: '/register',
+    async redirect({ url, baseUrl }) {
+      // After successful login, redirect to bug capture page
+      if (url.startsWith(baseUrl)) {
+        return `${baseUrl}/bug-capture`;
+      }
+      return url;
+    },
   },
   events: {
     async signIn({ user }) {

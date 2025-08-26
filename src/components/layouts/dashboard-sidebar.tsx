@@ -98,9 +98,9 @@ export function DashboardSidebar() {
         <div className="flex h-16 items-center justify-between px-6 border-b">
           <Link href="/dashboard" className="flex items-center space-x-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">N</span>
+              <span className="text-primary-foreground font-bold text-sm">B</span>
             </div>
-            <span className="font-semibold">Next.js Boilerplate</span>
+            <span className="font-semibold">Bug Capture</span>
           </Link>
           <Button
             variant="ghost"

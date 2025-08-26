@@ -19,16 +19,14 @@ export function CrossBrowserSection({
     }`}>
       {!showVideoPlayer ? (
         // Original image view
-        <div className={`flex justify-center transition-all duration-500 ${
+        <div className={`flex justify-center transition-all duration-500 max-h-[calc(100vh-140px)] ${
           showVideoPlayer ? 'transform -translate-x-full opacity-0' : 'transform translate-x-0 opacity-100'
         }`}>
-          <div className={`transition-all duration-300 relative ${
-            isSidebarCollapsed ? 'w-full' : 'w-full'
-          }`}>
+          <div className={`transition-all duration-300 relative`}>
             <img 
               src={currentImage} 
               alt="Browser Testing Window" 
-              className="w-full h-auto rounded-lg shadow-lg border border-gray-200"
+              className="w-full h-auto max-h-[calc(100vh-140px)] object-contain rounded-lg shadow-lg border border-gray-200"
             />
           </div>
         </div>

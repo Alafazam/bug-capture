@@ -2,11 +2,27 @@
 
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Menu, Bell, Search } from 'lucide-react';
+import { Menu, Bell, Search, LogOut } from 'lucide-react';
 import { useUIStore } from '@/lib/stores/ui-store';
+import { useRouter } from 'next/navigation';
 
 export function DashboardHeader() {
   const { setSidebarOpen } = useUIStore();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-background px-6">
@@ -44,6 +60,11 @@ export function DashboardHeader() {
 
         {/* Theme toggle */}
         <ThemeToggle />
+
+        {/* Logout button */}
+        <Button variant="ghost" size="sm" onClick={handleLogout}>
+          <LogOut className="h-4 w-4" />
+        </Button>
       </div>
     </header>
   );

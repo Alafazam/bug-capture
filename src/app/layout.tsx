@@ -7,23 +7,23 @@ import { Toaster } from '@/components/ui/sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Next.js Boilerplate',
-  description: 'A modern Next.js 15 boilerplate with comprehensive features',
-  keywords: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Boilerplate'],
-  authors: [{ name: 'Your Name' }],
-  creator: 'Your Name',
+  title: 'Bug Capture Mockup App',
+  description: 'A comprehensive bug capture and testing platform for cross-browser testing and issue reporting',
+  keywords: ['Bug Capture', 'Testing', 'Cross-browser', 'Issue Reporting', 'Jira Integration'],
+  authors: [{ name: 'Bug Capture Team' }],
+  creator: 'Bug Capture Team',
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://your-domain.com',
-    title: 'Next.js Boilerplate',
-    description: 'A modern Next.js 15 boilerplate with comprehensive features',
-    siteName: 'Next.js Boilerplate',
+    title: 'Bug Capture Mockup App',
+    description: 'A comprehensive bug capture and testing platform for cross-browser testing and issue reporting',
+    siteName: 'Bug Capture Mockup App',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Next.js Boilerplate',
-    description: 'A modern Next.js 15 boilerplate with comprehensive features',
+    title: 'Bug Capture Mockup App',
+    description: 'A comprehensive bug capture and testing platform for cross-browser testing and issue reporting',
   },
   robots: {
     index: true,

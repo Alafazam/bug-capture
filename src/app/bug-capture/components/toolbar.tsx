@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Video, Monitor, Settings, Tag, ChevronDown, Mic, Webcam, MicOff, VideoOff, GripVertical, MoveLeft, MoveRight } from "lucide-react";
 
@@ -314,10 +315,11 @@ export function Toolbar({
                       <Label htmlFor="description" className="text-sm font-medium">
                         Description
                       </Label>
-                      <Textarea
-                        id="description"
+                      <RichTextEditor
+                        value=""
+                        onChange={() => {}}
                         placeholder="Add more details..."
-                        rows={4}
+                        className="w-full"
                       />
                     </div>
 

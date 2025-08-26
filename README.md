@@ -1,4 +1,15 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bug Capture Mockup App
+
+A comprehensive bug capture and testing platform for cross-browser testing and issue reporting. This application allows users to capture screenshots, record videos, and create detailed bug reports with Jira integration.
+
+## Features
+
+- **Cross-browser Testing**: Switch between different browser views and app live modes
+- **Screen Recording**: Capture video recordings of user interactions
+- **Screenshot Capture**: Take screenshots at any point during testing
+- **Session Management**: Start and stop testing sessions
+- **Jira Integration**: Create and manage bug reports directly in Jira
+- **User Authentication**: Secure login system with session management
 
 ## Getting Started
 
@@ -14,11 +25,15 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to access the bug capture platform.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Login**: Use the provided credentials to access the platform
+2. **Start Session**: Begin a new testing session
+3. **Capture Media**: Take screenshots or record videos as needed
+4. **Create Reports**: Generate detailed bug reports with captured media
+5. **Jira Integration**: Send reports directly to your Jira project
 
 ## Learn More
 

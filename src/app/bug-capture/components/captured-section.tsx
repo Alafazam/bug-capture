@@ -1,18 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
-
-interface CapturedMedia {
-  id: string;
-  type: 'video' | 'screenshot';
-  src: string;
-  timestamp: string;
-  selected: boolean;
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Play, Pause, Volume2, VolumeX, Maximize, RefreshCw, Sparkles } from "lucide-react";
+import { type JiraFieldsResponse } from "@/lib/utils/jira-api";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { AISuggestionsPopup } from "./ai-suggestions-popup";
 
 interface CapturedMedia {
   id: string;
@@ -26,21 +22,118 @@ interface CapturedSectionProps {
   isSidebarCollapsed: boolean;
   logContent: string;
   capturedMedia: CapturedMedia[];
+  jiraProjectData: JiraFieldsResponse | null;
+  jiraLoading: boolean;
+  jiraError: string | null;
+  onRetryJiraFetch: () => Promise<void>;
 }
 
 export function CapturedSection({
   isSidebarCollapsed,
   logContent,
-  capturedMedia
+  capturedMedia,
+  jiraProjectData,
+  jiraLoading,
+  jiraError,
+  onRetryJiraFetch
 }: CapturedSectionProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showMetadata, setShowMetadata] = useState(false);
+  const [selectedIssueType, setSelectedIssueType] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedPriority, setSelectedPriority] = useState<string>('');
+  const [selectedAssignee, setSelectedAssignee] = useState<string>('');
+  const [showAdditionalFields, setShowAdditionalFields] = useState(false);
+  const [summary, setSummary] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+
+  const [isAIPopupOpen, setIsAIPopupOpen] = useState(false);
+  const [loadedLogContent, setLoadedLogContent] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Load sample.log file on component mount
+  useEffect(() => {
+    const loadSampleLog = async () => {
+      try {
+        const response = await fetch('/sample.log');
+        if (response.ok) {
+          const logText = await response.text();
+          setLoadedLogContent(logText);
+        }
+      } catch (error) {
+        console.error('Failed to load sample.log:', error);
+      }
+    };
 
+    loadSampleLog();
+  }, []);
+
+  // Get the selected issue type data
+  const selectedIssueTypeData = jiraProjectData?.issueTypes.find(
+    it => it.id === selectedIssueType
+  );
+
+  // Helper function to filter out common fields
+  const filterCommonFields = (fields: any[], excludedFields: string[]) => {
+    return fields.filter(field => !excludedFields.includes(field.id));
+  };
+
+  // Common field exclusions
+  const commonFieldExclusions = ['summary', 'description', 'reporter', 'project', 'issuetype'];
+  const additionalFieldExclusions = ['status', 'priority', 'assignee', ...commonFieldExclusions];
+
+  // Set default values when Jira data is loaded
+  useEffect(() => {
+    if (jiraProjectData && jiraProjectData.issueTypes.length > 0 && !selectedIssueType) {
+      const firstIssueType = jiraProjectData.issueTypes[0];
+      setSelectedIssueType(firstIssueType.id);
+      
+      // Set default status if available
+      const statusField = firstIssueType.optionalFields.find(f => f.id === 'status');
+      if (statusField?.allowedValues && statusField.allowedValues.length > 0) {
+        setSelectedStatus(statusField.allowedValues[0].id || statusField.allowedValues[0].value);
+      } else {
+        setSelectedStatus('triage'); // Default fallback
+      }
+      
+      // Set default priority if available
+      const priorityField = firstIssueType.optionalFields.find(f => f.id === 'priority');
+      if (priorityField?.allowedValues && priorityField.allowedValues.length > 0) {
+        setSelectedPriority(priorityField.allowedValues[0].id || priorityField.allowedValues[0].value);
+      } else {
+        setSelectedPriority('medium'); // Default fallback
+      }
+      
+      // Set default assignee (Unassigned)
+      setSelectedAssignee('');
+    }
+  }, [jiraProjectData, selectedIssueType]);
+
+  // Update status and priority when issue type changes
+  useEffect(() => {
+    if (selectedIssueTypeData) {
+      // Update status if available
+      const statusField = selectedIssueTypeData.optionalFields.find(f => f.id === 'status');
+      if (statusField?.allowedValues && statusField.allowedValues.length > 0) {
+        const firstStatus = statusField.allowedValues[0].id || statusField.allowedValues[0].value;
+        if (firstStatus !== selectedStatus) {
+          setSelectedStatus(firstStatus);
+        }
+      }
+      
+      // Update priority if available
+      const priorityField = selectedIssueTypeData.optionalFields.find(f => f.id === 'priority');
+      if (priorityField?.allowedValues && priorityField.allowedValues.length > 0) {
+        const firstPriority = priorityField.allowedValues[0].id || priorityField.allowedValues[0].value;
+        if (firstPriority !== selectedPriority) {
+          setSelectedPriority(firstPriority);
+        }
+      }
+    }
+  }, [selectedIssueTypeData, selectedStatus, selectedPriority]);
 
   const handlePlayPause = () => {
     if (videoRef.current) {
@@ -96,19 +189,109 @@ export function CapturedSection({
     }
   };
 
+  // AI Suggestions handlers
+  const handleAIClick = () => {
+    setIsAIPopupOpen(true);
+  };
 
+  const handleApproveSuggestions = (suggestions: { title: string; summary: string }) => {
+    setSummary(suggestions.title);
+    setDescription(suggestions.summary);
+    setIsAIPopupOpen(false);
+  };
+
+  const handleCloseAIPopup = () => {
+    setIsAIPopupOpen(false);
+  };
+
+  const renderFieldInput = (field: any) => {
+    switch (field.schema.type) {
+      case 'string':
+        return (
+          <input
+            type="text"
+            placeholder={field.name}
+            className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded"
+          />
+        );
+      case 'option':
+        return (
+          <div className="relative">
+            <select className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none rounded">
+              <option value="" disabled>
+                {field.name}
+              </option>
+              {field.allowedValues?.map((value: any) => (
+                <option key={value.id} value={value.id}>
+                  {value.name || value.value}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        );
+      case 'date':
+        return (
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600 whitespace-nowrap">{field.name}</span>
+            <input
+              type="date"
+              className="flex-1 px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded"
+            />
+          </div>
+        );
+      case 'number':
+        return (
+          <input
+            type="number"
+            placeholder={field.name}
+            className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded"
+          />
+        );
+      case 'array':
+        return (
+          <input
+            type="text"
+            placeholder={`${field.name} (comma separated)`}
+            className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded"
+          />
+        );
+      default:
+        return (
+          <input
+            type="text"
+            placeholder={field.name}
+            className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded"
+          />
+        );
+    }
+  };
 
   const renderVideoPlayer = (media: CapturedMedia) => {
     return (
-      <div className="bg-black rounded-lg overflow-hidden shadow-lg border border-gray-200">
-        {/* 1. Video Player Header */}
-        <div className="bg-gray-800 px-3 py-2 border-b border-gray-700">
-          <h3 className="text-white text-sm font-medium">
+      <div className="bg-white rounded-lg shadow-lg border border-gray-200 relative">
+        {/* Checkbox in top right corner */}
+        <div className="absolute top-3 right-3 z-10">
+          <input
+            type="checkbox"
+            checked={media.selected}
+            onChange={() => {}} // TODO: Add selection handler
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+          />
+        </div>
+        
+        {/* Video Player Header */}
+        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 rounded-t-lg">
+          <h3 className="text-gray-700 text-sm font-medium">
             Recorded Session from {media.timestamp}
           </h3>
         </div>
         
-        {/* 2. Video Content */}
+        {/* Video Content */}
         <div className="relative bg-black">
           <video
             ref={videoRef}
@@ -123,7 +306,7 @@ export function CapturedSection({
           </video>
         </div>
         
-        {/* 3. Video Controls */}
+        {/* Video Controls */}
         <div className="bg-gray-800 px-2 py-1">
           {/* Progress Bar */}
           <div className="w-full bg-gray-700 rounded-full h-1.5 mb-1">
@@ -140,7 +323,7 @@ export function CapturedSection({
             />
           </div>
           
-                    {/* Control Bar */}
+          {/* Control Bar */}
           <div className="flex items-center justify-between text-white">
             <div className="flex items-center space-x-2">
               {/* Play/Pause Button */}
@@ -185,11 +368,11 @@ export function CapturedSection({
                 <Maximize className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        </div>
+                  </div>
       </div>
-    );
-  };
+    </div>
+  );
+}
 
   const renderScreenshot = (media: CapturedMedia) => {
     return (
@@ -243,13 +426,13 @@ export function CapturedSection({
         <div className="w-[40%] space-y-4">
           {/* Console Log - Collapsible */}
           <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="console-log" className="border border-border">
-              <AccordionTrigger className="bg-muted px-4 py-2 hover:no-underline">
+            <AccordionItem value="console-log" className="border border-border [&[data-state=closed]]:border-b-border [&[data-state=open]]:border-b-border" style={{ borderBottomWidth: '1px' }}>
+              <AccordionTrigger className="bg-muted px-4 py-2 hover:no-underline border-b border-border">
                 <h3 className="text-sm font-medium">Console Log</h3>
               </AccordionTrigger>
               <AccordionContent className="p-4">
                 <textarea
-                  value={logContent}
+                  value={loadedLogContent || logContent}
                   readOnly
                   className="w-full h-32 resize-none bg-muted border border-input p-3 text-sm font-mono focus:outline-none overflow-y-auto"
                   placeholder="Loading console log..."
@@ -260,10 +443,30 @@ export function CapturedSection({
 
           {/* Jira Integrations Card */}
           <div className="bg-card border border-border">
-            <div className="bg-muted px-4 py-2 border-b border-border">
+            <div className="bg-muted px-4 py-2 border-b border-border flex items-center justify-between">
               <h3 className="text-sm font-medium">Jira Integration</h3>
+              {jiraLoading && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <RefreshCw className="w-3 h-3 animate-spin" />
+                  Loading Jira data...
+                </div>
+              )}
             </div>
             <div className="p-4">
+              {jiraError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-red-700 text-sm mb-2">{jiraError}</p>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={onRetryJiraFetch}
+                    className="text-xs"
+                  >
+                    <RefreshCw className="w-3 h-3 mr-1" />
+                    Retry
+                  </Button>
+                </div>
+              )}
               <Tabs defaultValue="create" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="create">Create New Jira</TabsTrigger>
@@ -271,111 +474,110 @@ export function CapturedSection({
                 </TabsList>
                 
                 <TabsContent value="create" className="mt-2">
-                  <div className="space-y-3">
-                    {/* Required fields note */}
-                    <p className="text-xs text-muted-foreground">
-                      Required fields are marked with an asterisk *
-                    </p>
-                    
+                  <div className="space-y-3"> 
                     <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium mb-1">
-                          Work type *
-                        </label>
-                        <div className="relative">
-                          <select className="w-full px-2 py-1 text-sm border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring appearance-none">
-                            <option value="">Select Work Type</option>
-                            <option value="task">Task</option>
-                            <option value="bug">Bug</option>
-                            <option value="story">Story</option>
-                            <option value="epic">Epic</option>
-                          </select>
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                            <svg className="w-3 h-3 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        </div>
-                        <a href="#" className="text-xs text-blue-600 hover:text-blue-700 mt-1 inline-flex items-center">
-                          Learn about work types
-                          <svg className="w-2 h-2 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      <div className="relative">
+                        <select 
+                          className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none rounded"
+                          disabled={jiraLoading || !jiraProjectData}
+                          value={selectedIssueType}
+                          onChange={(e) => setSelectedIssueType(e.target.value)}
+                        >
+                          <option value="" disabled>
+                            Issue Type
+                          </option>
+                          {jiraProjectData?.issueTypes.map((issueType) => (
+                            <option key={issueType.id} value={issueType.id}>
+                              {issueType.name}
+                              {issueType.subtask && ' (Subtask)'}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
-                        </a>
+                        </div>
                       </div>
                       
-                      <div>
-                        <label className="block text-xs font-medium mb-1">
-                          Status
-                        </label>
-                        <div className="relative">
-                          <select className="w-full px-2 py-1 text-sm border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring appearance-none">
-                            <option value="todo">To Do</option>
-                            <option value="inprogress">In Progress</option>
-                            <option value="done">Done</option>
-                          </select>
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                            <svg className="w-3 h-3 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
+                      <div className="relative">
+                        <select 
+                          className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none rounded"
+                          disabled={!selectedIssueTypeData}
+                          value={selectedStatus}
+                          onChange={(e) => setSelectedStatus(e.target.value)}
+                        >
+                          <option value="" disabled>
+                            Status
+                          </option>
+                          {selectedIssueTypeData?.optionalFields
+                            .find(f => f.id === 'status')?.allowedValues?.map((value: any) => (
+                              <option key={value.id} value={value.id}>
+                                {value.name || value.value}
+                              </option>
+                            )) || [
+                              { id: 'todo', name: 'To Do' },
+                              { id: 'inprogress', name: 'In Progress' },
+                              { id: 'done', name: 'Done' }
+                            ].map((value) => (
+                              <option key={value.id} value={value.id}>
+                                {value.name}
+                              </option>
+                            ))
+                          }
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          This is the initial status upon creation
-                        </p>
                       </div>
                     </div>
                     
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <label className="text-xs font-medium">
-                          Summary *
-                        </label>
-                        <button className="px-2 py-1 hover:bg-muted rounded transition-colors bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 flex items-center gap-1.5" title="AI-powered summary generation">
-                          <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
-                            <path d="M20 2v4"/>
-                            <path d="M22 4h-4"/>
-                            <circle cx="4" cy="20" r="2"/>
-                          </svg>
-                          <span className="text-xs font-medium text-purple-700">Generate with BrowserStack AI</span>
-                        </button>
+                    {/* Summary and Description */}
+                    <div className="space-y-3">
+                      {/* Summary */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={summary}
+                          onChange={(e) => setSummary(e.target.value)}
+                          className="flex-1 px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded"
+                          placeholder="Summary"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          title="AI Assistant"
+                          onClick={handleAIClick}
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <input
-                        type="text"
-                        placeholder="Brief description of the issue"
-                        className="w-full px-2 py-1 text-sm border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
-                      />
-                    </div>
-                    
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <label className="text-xs font-medium">
-                          Description
-                        </label>
-                        <button className="px-2 py-1 hover:bg-muted rounded transition-colors bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 flex items-center gap-1.5" title="AI-powered description generation">
-                          <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
-                            <path d="M20 2v4"/>
-                            <path d="M22 4h-4"/>
-                            <circle cx="4" cy="20" r="2"/>
-                          </svg>
-                          <span className="text-xs font-medium text-purple-700">Generate with BrowserStack AI</span>
-                        </button>
+                      
+                      {/* Description */}
+                      <div>
+                        <textarea
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Enter the issue description here"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded resize-none"
+                          rows={4}
+                        />
                       </div>
-                      <textarea
-                        placeholder="Detailed description of the issue"
-                        rows={5}
-                        className="w-full px-2 py-1 text-sm border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
-                      />
-                      <div className="mt-1">
+                      
+                      {/* Metadata Toggle */}
+                      <div>
                         <button 
                           onClick={() => setShowMetadata(!showMetadata)}
                           className="text-xs text-blue-600 hover:text-blue-700 inline-flex items-center"
                         >
-                          {showMetadata ? '▼' : '▶'} Additional meta data added with description
+                          Additional meta data what will get added with description
                         </button>
                       </div>
+                      
+                      {/* Metadata Content */}
                       {showMetadata && (
                         <div className="mt-2">
                           <textarea
@@ -391,63 +593,121 @@ Screenshot URL: https://live.browserstack.com/issue-tracker/93f8b7833d92c9e73452
 
 Quick Environment URL: https://live.browserstack.com/dashboard#os=OS+X&os_version=Sequoia&browser=Chrome&browser_version=139.0&zoom_to_fit=true&full_screen=true&url=http://localhost:3000/dashboard&speed=1&start=true`}
                             rows={8}
-                            className="w-full px-2 py-1 text-sm border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring font-mono"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 font-mono rounded"
                             readOnly
                           />
                         </div>
                       )}
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium mb-1">
-                          Assignee
-                        </label>
-                        <div className="relative">
-                          <select className="w-full px-2 py-1 text-sm border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring appearance-none">
-                            <option value="">Unassigned</option>
-                            <option value="user1">John Doe</option>
-                            <option value="user2">Jane Smith</option>
-                            <option value="user3">Mike Johnson</option>
-                          </select>
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                            <svg className="w-3 h-3 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                    {/* Assignee and Priority Fields - Only show if available in Jira */}
+                    {(selectedIssueTypeData?.optionalFields.find(f => f.id === 'assignee') || selectedIssueTypeData?.optionalFields.find(f => f.id === 'priority')) && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Assignee Field */}
+                        {selectedIssueTypeData?.optionalFields.find(f => f.id === 'assignee') && (
+                          <div className="relative">
+                            <select 
+                              className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none rounded"
+                              value={selectedAssignee}
+                              onChange={(e) => setSelectedAssignee(e.target.value)}
+                            >
+                              <option value="" disabled>
+                                Assignee
+                              </option>
+                              <option value="">Unassigned</option>
+                              {selectedIssueTypeData.optionalFields
+                                .find(f => f.id === 'assignee')?.allowedValues?.map((value: any) => (
+                                  <option key={value.accountId || value.id} value={value.accountId || value.id}>
+                                    {value.displayName || value.name}
+                                  </option>
+                                ))
+                              }
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-xs font-medium mb-1">
-                          Priority
-                        </label>
-                        <div className="relative">
-                          <select className="w-full px-2 py-1 text-sm border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring appearance-none">
-                            <option value="">Select Priority</option>
-                            <option value="highest">Highest</option>
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
-                            <option value="lowest">Lowest</option>
-                          </select>
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                            <svg className="w-3 h-3 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                        )}
+                        
+                        {/* Priority Field */}
+                        {selectedIssueTypeData?.optionalFields.find(f => f.id === 'priority') && (
+                          <div className="relative">
+                            <select 
+                              className="w-full px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none rounded"
+                              value={selectedPriority}
+                              onChange={(e) => setSelectedPriority(e.target.value)}
+                            >
+                              <option value="" >
+                                Priority
+                              </option>
+                              {selectedIssueTypeData.optionalFields
+                                .find(f => f.id === 'priority')?.allowedValues?.map((value: any) => (
+                                  <option key={value.id} value={value.id}>
+                                    {value.name}
+                                  </option>
+                                ))
+                              }
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
-                    </div>
+                    )}
                     
-                    <div>
-                      <a href="#" className="text-xs text-blue-600 hover:text-blue-700 inline-flex items-center">
-                        Show more fields
-                        <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </a>
-                    </div>
+                    {/* Dynamic Fields Section */}
+                    {selectedIssueTypeData && (
+                      <div className="space-y-3">
+
+                        {/* Required Fields */}
+                        {filterCommonFields(selectedIssueTypeData.requiredFields, commonFieldExclusions).length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="text-xs font-medium text-red-600">Required Fields *</h5>
+                            {filterCommonFields(selectedIssueTypeData.requiredFields, commonFieldExclusions).map((field) => (
+                              <div key={field.id} className="space-y-1">
+                                {renderFieldInput(field)}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Show other fields link */}
+                    {selectedIssueTypeData && (
+                      filterCommonFields(selectedIssueTypeData.optionalFields, additionalFieldExclusions).length > 0 && (
+                        <div className="mt-3">
+                          <button 
+                            onClick={() => setShowAdditionalFields(!showAdditionalFields)}
+                            className="text-xs text-blue-600 hover:text-blue-700 inline-flex items-center"
+                          >
+                            {showAdditionalFields ? 'Hide' : 'Show'} {filterCommonFields(selectedIssueTypeData.optionalFields, additionalFieldExclusions).length} additional fields
+                            <svg className={`w-3 h-3 ml-1 transition-transform ${showAdditionalFields ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                        </div>
+                      )
+                    )}
+                    
+                    {/* Additional Fields Section */}
+                    {showAdditionalFields && selectedIssueTypeData && (
+                      <div className="mt-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          {filterCommonFields(selectedIssueTypeData.optionalFields, additionalFieldExclusions).map((field) => (
+                            <div key={field.id} className="space-y-1">
+                              {renderFieldInput(field)}
+                            </div>
+                          ))
+                          }
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="border-t border-border pt-3">
                       <div className="flex items-center justify-between mb-2">
@@ -515,10 +775,11 @@ Quick Environment URL: https://live.browserstack.com/dashboard#os=OS+X&os_versio
                       <label className="block text-sm font-medium mb-1">
                         Comment/Description
                       </label>
-                      <textarea
+                      <RichTextEditor
+                        value=""
+                        onChange={() => {}}
                         placeholder="Enter your comment or description"
-                        rows={4}
-                        className="w-full px-3 py-2 border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                        className="w-full"
                       />
                     </div>
                     
@@ -532,6 +793,15 @@ Quick Environment URL: https://live.browserstack.com/dashboard#os=OS+X&os_versio
           </div>
         </div>
       </div>
+
+      {/* AI Suggestions Popup */}
+      <AISuggestionsPopup
+        isOpen={isAIPopupOpen}
+        onClose={handleCloseAIPopup}
+        onApprove={handleApproveSuggestions}
+        logs={loadedLogContent || logContent}
+        projectKey={jiraProjectData?.project?.key || 'PMT'}
+      />
     </div>
   );
 }

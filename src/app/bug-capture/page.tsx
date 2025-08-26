@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { signOut } from "next-auth/react";
 import { Toolbar } from "./components/toolbar";
 import { Sidebar } from "./components/sidebar";
 import { CrossBrowserSection } from "./components/cross-browser-section";
 import { CapturedSection } from "./components/captured-section";
+import { fetchJiraProjectFields, type JiraFieldsResponse } from "@/lib/utils/jira-api";
 
 interface CapturedMedia {
   id: string;
@@ -31,6 +33,9 @@ export default function BugCapturePage() {
   const [hasRecordedVideo, setHasRecordedVideo] = useState(false);
   const [currentSection, setCurrentSection] = useState<'cross-browser' | 'captured'>('cross-browser');
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia[]>([]);
+  const [jiraProjectData, setJiraProjectData] = useState<JiraFieldsResponse | null>(null);
+  const [jiraLoading, setJiraLoading] = useState(false);
+  const [jiraError, setJiraError] = useState<string | null>(null);
 
   // Initialize toolbar position to center top
   useEffect(() => {
@@ -107,8 +112,42 @@ export default function BugCapturePage() {
     console.log("Recording stopped");
   };
 
-  const handleNavigateToCaptured = () => {
+  const fetchJiraProjectData = async () => {
+    console.log('🔄 Starting Jira data fetch...');
+    console.log('🔧 Environment check - JIRA_URL:', process.env.NEXT_PUBLIC_JIRA_URL ? 'Set' : 'Not set');
+    console.log('🔧 Environment check - JIRA_EMAIL:', process.env.NEXT_PUBLIC_JIRA_EMAIL ? 'Set' : 'Not set');
+    console.log('🔧 Environment check - JIRA_API_TOKEN:', process.env.NEXT_PUBLIC_JIRA_API_TOKEN ? 'Set' : 'Not set');
+    
+    setJiraLoading(true);
+    setJiraError(null);
+    
+    try {
+      console.log('📡 Calling fetchJiraProjectFields with PMT...');
+      const projectData = await fetchJiraProjectFields('PMT');
+      console.log('✅ Jira data received:', projectData);
+      setJiraProjectData(projectData);
+    } catch (error) {
+      console.error('❌ Error fetching Jira project data:', error);
+      setJiraError(error instanceof Error ? error.message : 'Failed to fetch Jira project data');
+    } finally {
+      setJiraLoading(false);
+      console.log('🏁 Jira data fetch completed');
+    }
+  };
+
+  const handleNavigateToCaptured = async () => {
+    console.log('🎯 Navigating to captured section...');
+    console.log('📊 Current state - jiraProjectData:', jiraProjectData, 'jiraLoading:', jiraLoading);
+    
     setCurrentSection('captured');
+    
+    // Fetch Jira project data when navigating to captured section
+    if (!jiraProjectData && !jiraLoading) {
+      console.log('🚀 Triggering Jira data fetch...');
+      await fetchJiraProjectData();
+    } else {
+      console.log('⏭️ Skipping Jira data fetch - already loaded or loading');
+    }
   };
 
   const handleNavigateToCrossBrowser = () => {
@@ -122,6 +161,32 @@ export default function BugCapturePage() {
 
   const handleIntegrations = () => {
     console.log("Integrations clicked");
+    // Manually trigger Jira data fetch for testing
+    if (!jiraProjectData && !jiraLoading) {
+      fetchJiraProjectData();
+    }
+  };
+
+  const handleStopSession = () => {
+    console.log("Stopping session and logging out user");
+    
+    // Show confirmation dialog
+    const confirmed = window.confirm("Are you sure you want to stop the session and log out?");
+    if (!confirmed) {
+      return;
+    }
+    
+    // Stop any ongoing recordings or sessions
+    if (isVideoRecording) {
+      setIsVideoRecording(false);
+      setIsRecordingPaused(false);
+      setRecordingTime(0);
+    }
+    if (isSessionCapturing) {
+      setIsSessionCapturing(false);
+    }
+    // Logout the user and redirect to login page
+    signOut({ callbackUrl: '/login' });
   };
 
   const toggleSidebar = () => {
@@ -192,6 +257,15 @@ export default function BugCapturePage() {
     };
   }, [isVideoRecording, isRecordingPaused]);
 
+  // Auto-fetch Jira data when component mounts (for testing)
+  useEffect(() => {
+    console.log('🚀 Component mounted, checking if we should fetch Jira data...');
+    if (!jiraProjectData && !jiraLoading) {
+      console.log('🔄 Auto-fetching Jira data on mount...');
+      fetchJiraProjectData();
+    }
+  }, []); // Empty dependency array means this runs once on mount
+
     return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
@@ -200,6 +274,7 @@ export default function BugCapturePage() {
         isAppLiveMode={isAppLiveMode}
         onToggleSidebar={toggleSidebar}
         onSwitchBrowser={handleSwitchBrowser}
+        onStopSession={handleStopSession}
       />
 
       {/* Main Content */}
@@ -242,6 +317,10 @@ export default function BugCapturePage() {
             isSidebarCollapsed={isSidebarCollapsed}
             logContent={logContent}
             capturedMedia={capturedMedia}
+            jiraProjectData={jiraProjectData}
+            jiraLoading={jiraLoading}
+            jiraError={jiraError}
+            onRetryJiraFetch={fetchJiraProjectData}
           />
         )}
       </div>

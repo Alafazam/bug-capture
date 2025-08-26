@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -7,15 +8,16 @@ async function main() {
 
   // Create admin user
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+    where: { email: 'alafazam@gmail.com' },
     update: {},
     create: {
-      email: 'admin@example.com',
-      name: 'Admin User',
+      email: 'alafazam@gmail.com',
+      name: 'alafazam',
+      password: await bcrypt.hash('alafazam', 12),
       role: 'ADMIN',
-      bio: 'System administrator',
-      company: 'Example Corp',
-      jobTitle: 'System Administrator',
+      bio: 'AI prodcut Manager',
+      company: 'Increff',
+      jobTitle: 'AI prodcut Manager',
     },
   });
 
@@ -25,7 +27,8 @@ async function main() {
     update: {},
     create: {
       email: 'user@example.com',
-      name: 'Regular User',
+      name: 'user',
+      password: await bcrypt.hash('user123', 12),
       role: 'USER',
       bio: 'Regular user account',
       company: 'Example Corp',
@@ -40,8 +43,8 @@ async function main() {
       update: {},
       create: {
         id: 'post-1',
-        title: 'Welcome to Next.js Boilerplate',
-        content: 'This is a sample post created during database seeding.',
+        title: 'Welcome to Bug Capture Platform',
+        content: 'This is a sample post created during database seeding for the bug capture platform.',
         published: true,
         authorId: adminUser.id,
       },
@@ -51,8 +54,8 @@ async function main() {
       update: {},
       create: {
         id: 'post-2',
-        title: 'Getting Started Guide',
-        content: 'Learn how to use this boilerplate effectively.',
+        title: 'Getting Started with Bug Capture',
+        content: 'Learn how to use the bug capture platform effectively for testing and reporting.',
         published: true,
         authorId: regularUser.id,
       },

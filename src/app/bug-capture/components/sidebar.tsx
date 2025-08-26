@@ -1,19 +1,22 @@
 "use client";
 
 import { Menu, ChevronLeft, ChevronRight, Smartphone, RotateCcw, Accessibility, Maximize2, Bookmark, Settings, MapPin, Eye, Image, Square } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 interface SidebarProps {
   isSidebarCollapsed: boolean;
   isAppLiveMode: boolean;
   onToggleSidebar: () => void;
   onSwitchBrowser: () => void;
+  onStopSession?: () => void;
 }
 
 export function Sidebar({
   isSidebarCollapsed,
   isAppLiveMode,
   onToggleSidebar,
-  onSwitchBrowser
+  onSwitchBrowser,
+  onStopSession
 }: SidebarProps) {
   return (
     <div className={`bg-gray-50 border-r border-gray-200 transition-all duration-300 ${
@@ -140,10 +143,14 @@ export function Sidebar({
         </div>
 
         {/* Stop Session */}
-        <div className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer mt-4">
+        <div 
+          className="flex items-center p-2 hover:bg-red-50 rounded cursor-pointer mt-4 border border-red-200"
+          onClick={onStopSession}
+          title="Stop session and log out"
+        >
           <Square className="h-5 w-5 text-red-600" />
           {!isSidebarCollapsed && (
-            <span className="ml-3 text-sm font-medium text-red-600">Stop Session</span>
+            <span className="ml-3 text-sm font-medium text-red-600">Stop Session & Logout</span>
           )}
         </div>
       </div>
