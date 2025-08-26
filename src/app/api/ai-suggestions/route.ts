@@ -20,9 +20,10 @@ interface AISuggestionsRequest {
     selected: boolean;
   }>;
   context?: {
-    timestamp: string;
+    timestamp?: string;
     userAgent?: string;
     source?: string;
+    [key: string]: unknown;
   };
 }
 
@@ -36,7 +37,7 @@ interface AISuggestionsResponse {
 }
 
 // Agent 1: Analyze Logs Function (same as in issue-suggestions)
-async function analyzeLogsWithAgent1(logs: string, context: any): Promise<{ analysis: LogAnalysis; rawResponse: string }> {
+async function analyzeLogsWithAgent1(logs: string, context: Record<string, unknown>): Promise<{ analysis: LogAnalysis; rawResponse: string }> {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -113,8 +114,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<AISuggest
         timestamp: m.timestamp,
         selected: m.selected
       })),
-      timestamp: (context as any).timestamp || new Date().toISOString(),
-      source: (context as any).source || 'bug-capture-tool'
+      timestamp: (context as Record<string, unknown>).timestamp as string || new Date().toISOString(),
+      source: (context as Record<string, unknown>).source as string || 'bug-capture-tool'
     };
 
     // Call Agent 1 - Log Analysis

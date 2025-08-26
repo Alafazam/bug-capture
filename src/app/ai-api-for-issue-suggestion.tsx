@@ -1,7 +1,7 @@
 // pages/api/jira/create-issue-suggestions.js
 
-const OpenAI = require('openai');
-const JiraApi = require('jira-client');
+import OpenAI from 'openai';
+import JiraApi from 'jira-client';
 
 // Initialize OpenAI
 const openai = new OpenAI({

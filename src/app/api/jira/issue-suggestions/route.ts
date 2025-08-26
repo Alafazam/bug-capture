@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { LOG_ANALYZER_PROMPT, JIRA_ISSUE_CREATOR_PROMPT } from '@/lib/prompts/ai-suggestions';
+import { JiraIssueType } from '@/lib/utils/jira-api';
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -209,8 +210,8 @@ export async function POST(request: NextRequest) {
 
     // Step 3: Find appropriate issue type (default to Bug since Agent 1 doesn't specify issue type)
     const suggestedIssueType = issueTypeOverride 
-      ? issueTypes.find((type: any) => type.name === issueTypeOverride)
-      : issueTypes.find((type: any) => type.name === 'Bug')
+      ? issueTypes.find((type: JiraIssueType) => type.name === issueTypeOverride)
+      : issueTypes.find((type: JiraIssueType) => type.name === 'Bug')
       || issueTypes[0];
 
     // Get fields for the selected issue type
@@ -247,7 +248,7 @@ export async function POST(request: NextRequest) {
         { 
           project: projectData.name, 
           key: projectKey,
-          availableIssueTypes: issueTypes.map((t: any) => t.name)
+          availableIssueTypes: issueTypes.map((t: JiraIssueType) => t.name)
         }
       );
       issueSuggestions = result.suggestions;
@@ -295,7 +296,7 @@ export async function POST(request: NextRequest) {
           name: projectData.name,
           id: projectData.id
         },
-        availableIssueTypes: issueTypes.map((type: any) => ({
+        availableIssueTypes: issueTypes.map((type: JiraIssueType) => ({
           id: type.id,
           name: type.name,
           description: type.description
