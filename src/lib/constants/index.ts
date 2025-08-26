@@ -12,7 +12,7 @@ export const API_ROUTES = {
   // Auth routes
   AUTH: {
     LOGIN: '/api/auth/login',
-    REGISTER: '/api/auth/register',
+  
     LOGOUT: '/api/auth/logout',
     REFRESH: '/api/auth/refresh',
     PROFILE: '/api/auth/profile',
@@ -46,7 +46,7 @@ export const ROUTES = {
   
   // Auth routes
   LOGIN: '/login',
-  REGISTER: '/register',
+
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   
@@ -174,7 +174,7 @@ export const SUCCESS_MESSAGES = {
   UPLOADED: 'File uploaded successfully.',
   LOGGED_IN: 'Successfully logged in.',
   LOGGED_OUT: 'Successfully logged out.',
-  REGISTERED: 'Successfully registered.',
+
 } as const;
 
 // Animation durations

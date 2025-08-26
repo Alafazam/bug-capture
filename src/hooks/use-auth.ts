@@ -53,38 +53,7 @@ export const useAuth = () => {
     [setLoading, setAuthenticated]
   );
 
-  // Register function
-  const register = useCallback(
-    async (userData: { name: string; email: string; password: string }) => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
-        });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          showError('Registration Failed', data.error || ERROR_MESSAGES.GENERIC);
-          return { success: false, error: data.error };
-        }
-
-        showSuccess('Registration Successful', SUCCESS_MESSAGES.REGISTERED);
-        return { success: true };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.GENERIC;
-        showError('Registration Failed', errorMessage);
-        return { success: false, error: errorMessage };
-      } finally {
-        setLoading(false);
-      }
-    },
-    [setLoading]
-  );
 
   // Logout function
   const logout = useCallback(async () => {
@@ -171,7 +140,7 @@ export const useAuth = () => {
   // Check if user has specific role
   const hasRole = useCallback(
     (role: string) => {
-      return user?.role === role;
+      return (user as any)?.role === role;
     },
     [user]
   );
@@ -179,7 +148,7 @@ export const useAuth = () => {
   // Check if user has any of the specified roles
   const hasAnyRole = useCallback(
     (roles: string[]) => {
-      return roles.includes(user?.role || '');
+      return roles.includes((user as any)?.role || '');
     },
     [user]
   );
@@ -193,7 +162,6 @@ export const useAuth = () => {
 
     // Actions
     login,
-    register,
     logout,
     updateProfile,
     changePassword,

@@ -101,14 +101,15 @@ async function analyzeLogsWithAgent1(logs: string, context: Record<string, unkno
       max_tokens: 2000
     });
 
-    const content = response.choices[0].message.content;
+    const content = response.choices[0].message.content || '';
     
     // Clean up response - sometimes AI adds markdown code blocks
     const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) || [null, content];
     return JSON.parse(jsonMatch[1]);
   } catch (error) {
     console.error('Agent 1 Error:', error);
-    throw new Error(`Log analysis failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Log analysis failed: ${errorMessage}`);
   }
 }
 
@@ -128,12 +129,13 @@ async function createIssueWithAgent2(analysis: Record<string, unknown>, jiraFiel
       max_tokens: 3000
     });
 
-    const content = response.choices[0].message.content;
+    const content = response.choices[0].message.content || '';
     const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) || [null, content];
     return JSON.parse(jsonMatch[1]);
   } catch (error) {
     console.error('Agent 2 Error:', error);
-    throw new Error(`Issue creation failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Issue creation failed: ${errorMessage}`);
   }
 }
 
@@ -163,7 +165,7 @@ export default async function handler(req: any, res: any) {
     
     // Step 1: Get Jira project metadata
     console.log('Fetching Jira project metadata...');
-    const createMeta = await jira.getCreateMetadata({
+    const createMeta = await jira.getIssueCreateMetadata({
       projectKeys: projectKey,
       expand: 'projects.issuetypes.fields'
     });
@@ -180,9 +182,9 @@ export default async function handler(req: any, res: any) {
 
     // Step 3: Find appropriate issue type
     const suggestedIssueType = issueTypeOverride 
-      ? project.issuetypes.find(type => type.name === issueTypeOverride)
-      : project.issuetypes.find(type => type.name.toLowerCase() === logAnalysis.issueType.toLowerCase()) 
-      || project.issuetypes.find(type => type.name === 'Bug')
+      ? project.issuetypes.find((type: any) => type.name === issueTypeOverride)
+      : project.issuetypes.find((type: any) => type.name.toLowerCase() === logAnalysis.issueType.toLowerCase()) 
+      || project.issuetypes.find((type: any) => type.name === 'Bug')
       || project.issuetypes[0];
 
     // Step 4: Run Agent 2 - Issue Creation
@@ -193,7 +195,7 @@ export default async function handler(req: any, res: any) {
       { 
         project: project.name, 
         key: projectKey,
-        availableIssueTypes: project.issuetypes.map(t => t.name)
+        availableIssueTypes: project.issuetypes.map((t: any) => t.name)
       }
     );
 
@@ -208,7 +210,7 @@ export default async function handler(req: any, res: any) {
           name: project.name,
           id: project.id
         },
-        availableIssueTypes: project.issuetypes.map(type => ({
+        availableIssueTypes: project.issuetypes.map((type: any) => ({
           id: type.id,
           name: type.name,
           description: type.description
@@ -217,7 +219,7 @@ export default async function handler(req: any, res: any) {
           id: suggestedIssueType.id,
           name: suggestedIssueType.name,
           fieldCount: Object.keys(suggestedIssueType.fields).length,
-          fields: Object.values(suggestedIssueType.fields).map(field => ({
+          fields: Object.values(suggestedIssueType.fields).map((field: any) => ({
             id: field.fieldId,
             name: field.name,
             required: field.required,
@@ -254,9 +256,10 @@ export default async function handler(req: any, res: any) {
 
   } catch (error) {
     console.error('Pipeline error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     res.status(500).json({
       error: 'Failed to process request',
-      details: error.message,
+      details: errorMessage,
       timestamp: new Date().toISOString()
     });
   }

@@ -22,7 +22,7 @@ export const useDebouncedCallback = <T extends (...args: any[]) => any>(
   callback: T,
   delay: number
 ): T => {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const debouncedCallback = useCallback(
     (...args: Parameters<T>) => {
@@ -54,7 +54,7 @@ export const useDebouncedAsyncCallback = <T extends (...args: any[]) => Promise<
   callback: T,
   delay: number
 ): T => {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const latestCallbackRef = useRef(callback);
 
   // Update the latest callback
@@ -98,7 +98,7 @@ export const useDebouncedAsyncCallback = <T extends (...args: any[]) => Promise<
 export const useDebouncedSearch = (delay: number = 300) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const updateSearch = useCallback((value: string) => {
     setSearchTerm(value);
@@ -143,7 +143,7 @@ export const useDebouncedSubmit = <T extends (...args: any[]) => any>(
   delay: number = 1000
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const debouncedSubmit = useCallback(
     async (...args: Parameters<T>) => {

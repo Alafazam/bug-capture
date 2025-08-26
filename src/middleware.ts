@@ -4,8 +4,7 @@ import { auth } from '@/lib/auth/auth-config';
 
 export async function middleware(request: NextRequest) {
   const session = await auth();
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
-                     request.nextUrl.pathname.startsWith('/register');
+    const isAuthPage = request.nextUrl.pathname.startsWith('/login');
   const isProtectedPage = request.nextUrl.pathname.startsWith('/dashboard') ||
                           request.nextUrl.pathname.startsWith('/bug-capture');
 
@@ -27,6 +26,5 @@ export const config = {
     '/dashboard/:path*',
     '/bug-capture',
     '/login',
-    '/register',
   ],
 };

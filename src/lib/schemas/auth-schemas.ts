@@ -6,18 +6,7 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-// Register schema
-export const registerSchema = z
-  .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  });
+
 
 // User profile schema
 export const userProfileSchema = z.object({
@@ -50,17 +39,17 @@ export const userPreferencesSchema = z.object({
     email: z.boolean().default(true),
     push: z.boolean().default(true),
     marketing: z.boolean().default(false),
-  }).default({}),
+  }),
   privacy: z.object({
     profileVisibility: z.enum(['public', 'private', 'friends']).default('public'),
     showEmail: z.boolean().default(false),
     showLocation: z.boolean().default(true),
-  }).default({}),
+  }),
 });
 
 // Export types
 export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;
+
 export type UserProfileInput = z.infer<typeof userProfileSchema>;
 export type PasswordChangeInput = z.infer<typeof passwordChangeSchema>;
 export type UserPreferencesInput = z.infer<typeof userPreferencesSchema>;

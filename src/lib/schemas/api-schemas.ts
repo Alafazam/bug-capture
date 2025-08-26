@@ -32,7 +32,7 @@ export const errorResponseSchema = z.object({
   success: z.literal(false),
   error: z.string(),
   code: z.string().optional(),
-  details: z.record(z.any()).optional(),
+  details: z.record(z.string(), z.any()).optional(),
   timestamp: z.string(),
 });
 
@@ -52,7 +52,7 @@ export const queryParamsSchema = z.object({
   search: z.string().optional(),
   sortBy: z.string().optional(),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  filters: z.record(z.any()).optional(),
+  filters: z.record(z.string(), z.any()).optional(),
 });
 
 // File upload response schema
@@ -69,7 +69,7 @@ export const fileUploadResponseSchema = z.object({
 export const healthCheckSchema = z.object({
   status: z.enum(['healthy', 'unhealthy']),
   timestamp: z.string(),
-  services: z.record(z.object({
+  services: z.record(z.string(), z.object({
     status: z.enum(['healthy', 'unhealthy']),
     responseTime: z.number().optional(),
   })),

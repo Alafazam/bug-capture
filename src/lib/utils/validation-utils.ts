@@ -115,7 +115,7 @@ export const validateFile = (
     if (error instanceof z.ZodError) {
       return {
         isValid: false,
-        error: error.errors.map(e => e.message).join(', '),
+        error: error.issues.map(e => e.message).join(', '),
       };
     }
     return {
@@ -319,7 +319,7 @@ export const validateFormData = <T>(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errors: Record<string, string> = {};
-      error.errors.forEach((err) => {
+      error.issues.forEach((err) => {
         const path = err.path.join('.');
         errors[path] = err.message;
       });
