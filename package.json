@@ -98,6 +98,7 @@
     "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^16.3.0",
     "@types/bcryptjs": "^3.0.0",
+    "@types/jira-client": "7.1.9",
     "@types/lodash": "^4.17.20",
     "@types/node": "^20",
     "@types/papaparse": "^5.3.16",
