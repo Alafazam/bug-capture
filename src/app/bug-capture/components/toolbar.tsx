@@ -114,27 +114,27 @@ export function Toolbar({
         cursor: isDragging ? 'grabbing' : 'default'
       }}
     >
-      <div className="bg-white rounded-lg px-3 py-1.5 shadow-sm border border-gray-200">
-        <div className="flex items-center space-x-3">
+      <div className="bg-white rounded-lg px-3 py-2 shadow-sm border border-gray-200">
+        <div className="flex items-center space-x-4">
           {/* Drag Indicator */}
           <div 
-            className="p-1.5 text-gray-400 cursor-grab hover:text-gray-600 transition-colors"
+            className="flex flex-col items-center space-y-1 cursor-grab hover:text-gray-600 transition-colors"
             onMouseDown={onMouseDown}
             title="Drag Toolbar"
           >
-            <GripVertical className="h-4 w-4" />
+            <GripVertical className="h-4 w-4 text-gray-400" />
+            <span className="text-xs text-gray-400">Drag</span>
           </div>
-
-
 
           {/* Capture Screenshot - Only show in cross-browser section */}
           {currentSection === 'cross-browser' && (
             <button
               onClick={onScreenshotCapture}
-              className="p-1.5 hover:bg-gray-50 rounded-md transition-colors"
+              className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-md transition-colors p-1"
               title="Capture Screenshot"
             >
               <Camera className="h-4 w-4 text-gray-600" />
+              <span className="text-xs text-gray-500">Screenshot</span>
             </button>
           )}
 
@@ -145,18 +145,20 @@ export function Toolbar({
               <div className="flex items-center">
                 <button
                   onClick={onVideoToggle}
-                  className="p-2 hover:bg-gray-50 rounded-l-md transition-colors"
+                  className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-l-md transition-colors p-1"
                   title="Capture Video"
                 >
                   <Video className="h-5 w-5 text-gray-600" />
+                  <span className="text-xs text-gray-500">Record</span>
                 </button>
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
-                      className="p-2 hover:bg-gray-50 rounded-r-md transition-colors border-l border-gray-200"
+                      className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-r-md transition-colors border-l border-gray-200 p-1"
                       title="Video Options"
                     >
                       <ChevronDown className="h-4 w-4 text-gray-600" />
+                      <span className="text-xs text-gray-500">Options</span>
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-48 p-2 bg-white text-gray-600 border-gray-200 rounded-md shadow-lg">
@@ -200,7 +202,7 @@ export function Toolbar({
                 {/* Recording Indicator and Time Display - Clickable to pause/resume */}
                 <button
                   onClick={onRecordingPause}
-                  className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-md transition-colors p-1"
                   title={isRecordingPaused ? "Resume Recording" : "Pause Recording"}
                 >
                   <div className={`w-4 h-4 rounded-full border-2 ${
@@ -208,18 +210,22 @@ export function Toolbar({
                       ? 'bg-gray-400 border-gray-400' 
                       : 'bg-red-500 border-red-500'
                   }`}></div>
-                  <span className="text-sm text-gray-600 font-medium">
-                    {isRecordingPaused ? "Paused" : "Recording"} at {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+                  <span className="text-xs text-gray-500">
+                    {isRecordingPaused ? "Paused" : "Recording"}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
                   </span>
                 </button>
 
                 {/* Stop Recording (Square) */}
                 <button
                   onClick={onStopRecording}
-                  className="p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-md transition-colors p-1"
                   title="Stop Recording"
                 >
                   <div className="w-4 h-4 bg-red-500"></div>
+                  <span className="text-xs text-gray-500">Stop</span>
                 </button>
               </div>
             )
@@ -228,7 +234,7 @@ export function Toolbar({
           {/* Capture Session Info Toggle */}
           <button
             onClick={onSessionToggle}
-            className={`p-2 rounded-md transition-colors ${
+            className={`flex flex-col items-center space-y-1 rounded-md transition-colors p-1 ${
               isSessionCapturing 
                 ? 'bg-blue-50 text-blue-600' 
                 : 'hover:bg-gray-50 text-gray-600'
@@ -236,6 +242,7 @@ export function Toolbar({
             title="Capture Session Info"
           >
             <Monitor className="h-5 w-5" />
+            <span className="text-xs text-gray-500">Session</span>
           </button>
 
           {/* Create Jira with Settings Dropdown - Only show in captured section */}
@@ -243,11 +250,11 @@ export function Toolbar({
             <Popover>
               <PopoverTrigger asChild>
                 <button
-                  className="p-2 hover:bg-gray-50 rounded-md transition-colors flex items-center space-x-1"
+                  className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-md transition-colors p-1"
                   title="Jira Settings"
                 >
                   <img src="/jira.svg" alt="Jira" className="w-5 h-5" />
-                  <ChevronDown className="h-4 w-4 text-gray-600" />
+                  <span className="text-xs text-gray-500">Jira</span>
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-3 bg-white text-gray-600 border-gray-200 rounded-md shadow-lg">
@@ -308,10 +315,11 @@ export function Toolbar({
             <Dialog open={isMarkerModalOpen} onOpenChange={setIsMarkerModalOpen}>
               <DialogTrigger asChild>
                 <button
-                  className="p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-md transition-colors p-1"
                   title="Add Marker"
                 >
                   <Tag className="h-5 w-5 text-gray-600" />
+                  <span className="text-xs text-gray-500">Marker</span>
                 </button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
@@ -352,10 +360,11 @@ export function Toolbar({
           {/* Integrations */}
           <button
             onClick={onIntegrations}
-            className="p-2 hover:bg-gray-50 rounded-md transition-colors"
+            className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-md transition-colors p-1"
             title="Integrations"
           >
             <Settings className="h-5 w-5 text-gray-600" />
+            <span className="text-xs text-gray-500">Settings</span>
           </button>
 
           {/* Navigation Arrows - Only appear after capture */}
@@ -364,18 +373,20 @@ export function Toolbar({
               {currentSection === 'cross-browser' ? (
                 <button
                   onClick={onNavigateToCaptured}
-                  className="p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-md transition-colors p-1"
                   title="View Captured Video"
                 >
                   <MoveRight className="h-5 w-5 text-gray-600" />
+                  <span className="text-xs text-gray-500">View</span>
                 </button>
               ) : (
                 <button
                   onClick={onNavigateToCrossBrowser}
-                  className="p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex flex-col items-center space-y-1 hover:bg-gray-50 rounded-md transition-colors p-1"
                   title="Back to Browser View"
                 >
                   <MoveLeft className="h-5 w-5 text-gray-600" />
+                  <span className="text-xs text-gray-500">Back</span>
                 </button>
               )}
             </>
