@@ -13,7 +13,34 @@ A comprehensive bug capture and testing platform for cross-browser testing and i
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+1. **Jira API Setup**: To use the Jira integration features, you'll need to set up your Jira credentials:
+
+   Create a `.env.local` file in your project root with the following variables:
+   ```env
+   # Jira Configuration
+   JIRA_URL=https://your-company.atlassian.net/
+   JIRA_EMAIL=your-email@company.com
+   JIRA_API_TOKEN=your-api-token
+   ```
+
+   To get your Jira API token:
+   1. Go to [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
+   2. Click "Create API token"
+   3. Give it a label (e.g., "Bug Capture App")
+   4. Copy the generated token
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   ```
+
+### Running the Development Server
 
 ```bash
 npm run dev

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Video, Monitor, Settings, Tag, ChevronDown, Mic, Webcam, MicOff, VideoOff, GripVertical, MoveLeft, MoveRight } from "lucide-react";
+import { fetchJiraProjects, fetchJiraProjectFields, type JiraProject, type JiraIssueType } from "@/lib/utils/jira-api";
 
 interface ToolbarProps {
   isVideoRecording: boolean;
@@ -24,6 +24,8 @@ interface ToolbarProps {
   toolbarPosition: { x: number; y: number };
   hasRecordedVideo: boolean;
   currentSection: 'cross-browser' | 'captured';
+  selectedProject: string;
+  onProjectChange: (projectKey: string) => void;
   onScreenshotCapture: () => void;
   onVideoToggle: () => void;
   onRecordingPause: () => void;
@@ -48,6 +50,8 @@ export function Toolbar({
   toolbarPosition,
   hasRecordedVideo,
   currentSection,
+  selectedProject,
+  onProjectChange,
   onScreenshotCapture,
   onVideoToggle,
   onRecordingPause,
@@ -60,14 +64,45 @@ export function Toolbar({
   onNavigateToCaptured,
   onNavigateToCrossBrowser
 }: ToolbarProps) {
-  const [isJiraSheetOpen, setIsJiraSheetOpen] = useState(false);
   const [isMarkerModalOpen, setIsMarkerModalOpen] = useState(false);
   const [markerText, setMarkerText] = useState("");
+  const [jiraProjects, setJiraProjects] = useState<JiraProject[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+
+  // Debug log to show current state
+  console.log('Toolbar render - jiraProjects:', jiraProjects.length, 'isLoading:', isLoadingProjects, 'selectedProject:', selectedProject);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setIsLoadingProjects(true);
+        console.log('Fetching Jira projects...');
+        const response = await fetchJiraProjects();
+        console.log('Jira projects fetched successfully:', response.projects);
+        console.log('Project keys:', response.projects.map(p => p.key));
+        console.log('Project names:', response.projects.map(p => p.name));
+        console.log('Number of projects:', response.projects.length);
+        setJiraProjects(response.projects);
+      } catch (error) {
+        console.error('Failed to fetch Jira projects:', error);
+        // Keep empty array if fetch fails
+        setJiraProjects([]);
+      } finally {
+        setIsLoadingProjects(false);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   const handleSaveMarker = () => {
     console.log("Marker added at", recordingTime, "seconds:", markerText);
     setMarkerText("");
     setIsMarkerModalOpen(false);
+  };
+
+  const handleProjectChange = (projectKey: string) => {
+    console.log('Project changed to:', projectKey);
+    onProjectChange(projectKey);
   };
 
   return (
@@ -205,186 +240,67 @@ export function Toolbar({
 
           {/* Create Jira with Settings Dropdown - Only show in captured section */}
           {currentSection === 'captured' && (
-            <div className="flex items-center">
-              <Sheet open={isJiraSheetOpen} onOpenChange={setIsJiraSheetOpen}>
-                <SheetTrigger asChild>
-                  <button
-                    className="p-2 hover:bg-gray-50 rounded-l-md transition-colors"
-                    title="Create Jira Ticket"
-                  >
-                    <img src="/jira.svg" alt="Jira" className="w-5 h-5" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-                  <SheetHeader>
-                    <SheetTitle className="flex items-center space-x-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded-sm flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-sm"></div>
-                      </div>
-                      <span>Jira</span>
-                    </SheetTitle>
-                  </SheetHeader>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className="p-2 hover:bg-gray-50 rounded-md transition-colors flex items-center space-x-1"
+                  title="Jira Settings"
+                >
+                  <img src="/jira.svg" alt="Jira" className="w-5 h-5" />
+                  <ChevronDown className="h-4 w-4 text-gray-600" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-3 bg-white text-gray-600 border-gray-200 rounded-md shadow-lg">
+                <div className="text-xs font-semibold text-gray-500 mb-3 uppercase">JIRA SETTINGS</div>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="jira-host" className="text-xs font-medium text-gray-600">
+                      Host
+                    </Label>
+                    <Select defaultValue="increff">
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="increff">increff</SelectItem>
+                        <SelectItem value="company2">company2</SelectItem>
+                        <SelectItem value="company3">company3</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="jira-project" className="text-xs font-medium text-gray-600">
+                      Project
+                    </Label>
+                    <Select value={selectedProject} onValueChange={handleProjectChange}>
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder={isLoadingProjects ? "Loading projects..." : "Select project"} />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {isLoadingProjects ? (
+                          <SelectItem value="loading" disabled>
+                            Loading projects...
+                          </SelectItem>
+                        ) : jiraProjects.length === 0 ? (
+                          <SelectItem value="no-projects" disabled>
+                            No projects available ({jiraProjects.length} projects loaded)
+                          </SelectItem>
+                        ) : (
+                          jiraProjects.map((project) => (
+                            <SelectItem key={project.id} value={project.key}>
+                              {project.name} ({project.key})
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   
-                  <div className="mt-6 space-y-6">
-                    {/* Host */}
-                    <div className="space-y-2">
-                      <Label htmlFor="host" className="text-sm font-medium">
-                        Host <span className="text-red-500">*</span>
-                      </Label>
-                      <Select defaultValue="increff">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="increff">increff</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
 
-                    {/* Project */}
-                    <div className="space-y-2">
-                      <Label htmlFor="project" className="text-sm font-medium">
-                        Project <span className="text-red-500">*</span>
-                      </Label>
-                      <Select defaultValue="increff-product-team">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="increff-product-team">Increff Product Team</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Tabs */}
-                    <div className="flex space-x-1 bg-gray-100 p-1 rounded-md">
-                      <button className="flex-1 py-2 px-3 text-sm font-medium bg-white rounded-md shadow-sm">
-                        Create issue
-                      </button>
-                      <button className="flex-1 py-2 px-3 text-sm font-medium text-gray-600">
-                        Update existing issue
-                      </button>
-                    </div>
-
-                    {/* Issue Type */}
-                    <div className="space-y-2">
-                      <Label htmlFor="issue-type" className="text-sm font-medium">
-                        Issue Type <span className="text-red-500">*</span>
-                      </Label>
-                      <Select defaultValue="task">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="task">Task</SelectItem>
-                          <SelectItem value="bug">Bug</SelectItem>
-                          <SelectItem value="story">Story</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Assignee */}
-                    <div className="space-y-2">
-                      <Label htmlFor="assignee" className="text-sm font-medium">
-                        Assignee
-                      </Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select user" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="user1">User 1</SelectItem>
-                          <SelectItem value="user2">User 2</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Summary */}
-                    <div className="space-y-2">
-                      <Label htmlFor="summary" className="text-sm font-medium">
-                        Summary <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="summary"
-                        placeholder="Tell your team what went wrong"
-                      />
-                    </div>
-
-                    {/* Description */}
-                    <div className="space-y-2">
-                      <Label htmlFor="description" className="text-sm font-medium">
-                        Description
-                      </Label>
-                      <RichTextEditor
-                        value=""
-                        onChange={() => {}}
-                        placeholder="Add more details..."
-                        className="w-full"
-                      />
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex space-x-3 pt-4">
-                      <Button
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => setIsJiraSheetOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button className="flex-1">
-                        Create
-                      </Button>
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    className="p-2 hover:bg-gray-50 rounded-r-md transition-colors border-l border-gray-200"
-                    title="Jira Settings"
-                  >
-                    <ChevronDown className="h-4 w-4 text-gray-600" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 p-3 bg-white text-gray-600 border-gray-200 rounded-md shadow-lg">
-                  <div className="text-xs font-semibold text-gray-500 mb-3 uppercase">JIRA SETTINGS</div>
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <Label htmlFor="jira-host" className="text-xs font-medium text-gray-600">
-                        Host
-                      </Label>
-                      <Select defaultValue="increff">
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="increff">increff</SelectItem>
-                          <SelectItem value="company2">company2</SelectItem>
-                          <SelectItem value="company3">company3</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="jira-project" className="text-xs font-medium text-gray-600">
-                        Project
-                      </Label>
-                      <Select defaultValue="increff-product-team">
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="increff-product-team">Increff Product Team</SelectItem>
-                          <SelectItem value="increff-dev-team">Increff Dev Team</SelectItem>
-                          <SelectItem value="increff-qa-team">Increff QA Team</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
 
           {/* Add Marker - Only show when recording */}

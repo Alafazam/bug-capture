@@ -463,3 +463,19 @@ export interface SystemHealth {
   version: string;
   timestamp: Date;
 }
+
+import { Annotation } from '@/components/ui/annotation-canvas';
+
+export interface CapturedMedia {
+  id: string;
+  type: 'video' | 'screenshot';
+  src: string;
+  timestamp: string;
+  selected: boolean;
+  annotations?: Annotation[];
+  annotatedSrc?: string; // URL of the annotated image
+}
+
+export interface AnnotationState {
+  [mediaId: string]: Annotation[];
+}

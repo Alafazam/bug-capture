@@ -5,18 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, Volume2, VolumeX, Maximize, RefreshCw, Sparkles } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, RefreshCw, Sparkles, Edit3 } from "lucide-react";
 import { type JiraFieldsResponse } from "@/lib/utils/jira-api";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { AISuggestionsPopup } from "./ai-suggestions-popup";
+import { AnnotationCanvas, type Annotation } from "@/components/ui/annotation-canvas";
+import { CapturedMedia } from "@/types/common";
 
-interface CapturedMedia {
-  id: string;
-  type: 'video' | 'screenshot';
-  src: string;
-  timestamp: string;
-  selected: boolean;
-}
+// Remove this interface since we're importing it from types/common.ts
 
 interface CapturedSectionProps {
   isSidebarCollapsed: boolean;
@@ -26,6 +22,9 @@ interface CapturedSectionProps {
   jiraLoading: boolean;
   jiraError: string | null;
   onRetryJiraFetch: () => Promise<void>;
+  onUpdateCapturedMedia?: (updatedMedia: CapturedMedia[]) => void;
+  onCreateJira?: (formData: any) => void;
+  isVisible?: boolean;
 }
 
 export function CapturedSection({
@@ -35,7 +34,10 @@ export function CapturedSection({
   jiraProjectData,
   jiraLoading,
   jiraError,
-  onRetryJiraFetch
+  onRetryJiraFetch,
+  onUpdateCapturedMedia,
+  onCreateJira,
+  isVisible = true
 }: CapturedSectionProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -52,7 +54,11 @@ export function CapturedSection({
 
   const [isAIPopupOpen, setIsAIPopupOpen] = useState(false);
   const [loadedLogContent, setLoadedLogContent] = useState<string>('');
+  const [showAnnotationCanvas, setShowAnnotationCanvas] = useState(false);
+  const [currentAnnotatingMedia, setCurrentAnnotatingMedia] = useState<CapturedMedia | null>(null);
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const summaryInputRef = useRef<HTMLInputElement>(null);
 
   // Load sample.log file on component mount
   useEffect(() => {
@@ -71,6 +77,24 @@ export function CapturedSection({
     loadSampleLog();
   }, []);
 
+  // Auto-focus summary input when Jira data is loaded and component is visible
+  useEffect(() => {
+    if (jiraProjectData && isVisible && summaryInputRef.current) {
+      // Small delay to ensure the component is fully rendered and any animations complete
+      const timer = setTimeout(() => {
+        if (summaryInputRef.current) {
+          summaryInputRef.current.focus();
+          // Optionally select all text if there's any content
+          if (summaryInputRef.current.value) {
+            summaryInputRef.current.select();
+          }
+        }
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [jiraProjectData, isVisible]);
+
   // Get the selected issue type data
   const selectedIssueTypeData = jiraProjectData?.issueTypes.find(
     it => it.id === selectedIssueType
@@ -85,30 +109,36 @@ export function CapturedSection({
   const commonFieldExclusions = ['summary', 'description', 'reporter', 'project', 'issuetype'];
   const additionalFieldExclusions = ['status', 'priority', 'assignee', ...commonFieldExclusions];
 
-  // Set default values when Jira data is loaded
+  // Set default values when Jira data is loaded or project changes
   useEffect(() => {
-    if (jiraProjectData && jiraProjectData.issueTypes.length > 0 && !selectedIssueType) {
-      const firstIssueType = jiraProjectData.issueTypes[0];
-      setSelectedIssueType(firstIssueType.id);
+    if (jiraProjectData && jiraProjectData.issueTypes.length > 0) {
+      // Check if current selected issue type exists in new project data
+      const currentIssueTypeExists = jiraProjectData.issueTypes.find(it => it.id === selectedIssueType);
       
-      // Set default status if available
-      const statusField = firstIssueType.optionalFields.find(f => f.id === 'status');
-      if (statusField?.allowedValues && statusField.allowedValues.length > 0) {
-        setSelectedStatus(statusField.allowedValues[0].id || statusField.allowedValues[0].value);
-      } else {
-        setSelectedStatus('triage'); // Default fallback
+      // If no issue type is selected or current one doesn't exist in new project, select the first one
+      if (!selectedIssueType || !currentIssueTypeExists) {
+        const firstIssueType = jiraProjectData.issueTypes[0];
+        setSelectedIssueType(firstIssueType.id);
+        
+        // Set default status if available
+        const statusField = firstIssueType.optionalFields.find(f => f.id === 'status');
+        if (statusField?.allowedValues && statusField.allowedValues.length > 0) {
+          setSelectedStatus(statusField.allowedValues[0].id || statusField.allowedValues[0].value);
+        } else {
+          setSelectedStatus('triage'); // Default fallback
+        }
+        
+        // Set default priority if available
+        const priorityField = firstIssueType.optionalFields.find(f => f.id === 'priority');
+        if (priorityField?.allowedValues && priorityField.allowedValues.length > 0) {
+          setSelectedPriority(priorityField.allowedValues[0].id || priorityField.allowedValues[0].value);
+        } else {
+          setSelectedPriority('medium'); // Default fallback
+        }
+        
+        // Set default assignee (Unassigned)
+        setSelectedAssignee('');
       }
-      
-      // Set default priority if available
-      const priorityField = firstIssueType.optionalFields.find(f => f.id === 'priority');
-      if (priorityField?.allowedValues && priorityField.allowedValues.length > 0) {
-        setSelectedPriority(priorityField.allowedValues[0].id || priorityField.allowedValues[0].value);
-      } else {
-        setSelectedPriority('medium'); // Default fallback
-      }
-      
-      // Set default assignee (Unassigned)
-      setSelectedAssignee('');
     }
   }, [jiraProjectData, selectedIssueType]);
 
@@ -202,6 +232,60 @@ export function CapturedSection({
 
   const handleCloseAIPopup = () => {
     setIsAIPopupOpen(false);
+  };
+
+  // Annotation handlers
+  const handleOpenAnnotation = (media: CapturedMedia) => {
+    setCurrentAnnotatingMedia(media);
+    setAnnotations(media.annotations || []);
+    setShowAnnotationCanvas(true);
+  };
+
+  const handleAnnotationChange = (newAnnotations: Annotation[]) => {
+    setAnnotations(newAnnotations);
+  };
+
+  const handleSaveAnnotation = (annotatedImageDataUrl: string) => {
+    if (currentAnnotatingMedia) {
+      // Update the media with annotations and annotated image
+      const updatedMedia = {
+        ...currentAnnotatingMedia,
+        annotations: annotations,
+        annotatedSrc: annotatedImageDataUrl
+      };
+      
+      // Update the captured media list
+      const updatedCapturedMedia = capturedMedia.map(media => 
+        media.id === currentAnnotatingMedia.id ? updatedMedia : media
+      );
+      
+      // Update the parent component's state
+      onUpdateCapturedMedia?.(updatedCapturedMedia);
+      
+      setShowAnnotationCanvas(false);
+      setCurrentAnnotatingMedia(null);
+      setAnnotations([]);
+    }
+  };
+
+  const handleCloseAnnotation = () => {
+    setShowAnnotationCanvas(false);
+    setCurrentAnnotatingMedia(null);
+    setAnnotations([]);
+  };
+
+  const handleCreateButtonClick = () => {
+    const formData = {
+      summary,
+      description,
+      issueType: selectedIssueType,
+      status: selectedStatus,
+      priority: selectedPriority,
+      assignee: selectedAssignee,
+      project: jiraProjectData?.project?.key || 'PMT'
+    };
+    
+    onCreateJira?.(formData);
   };
 
   const renderFieldInput = (field: any) => {
@@ -375,29 +459,48 @@ export function CapturedSection({
 }
 
   const renderScreenshot = (media: CapturedMedia) => {
+    const hasAnnotations = media.annotations && media.annotations.length > 0;
+    const displaySrc = media.annotatedSrc || media.src;
+    
     return (
       <div className="bg-white rounded-lg shadow-lg border border-gray-200 relative">
         {/* Checkbox in top right corner */}
-        <div className="absolute top-3 right-3 z-10">
-          <input
-            type="checkbox"
-            checked={media.selected}
-            onChange={() => {}} // TODO: Add selection handler
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-          />
-        </div>
+
         
         {/* Screenshot Header */}
-        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 rounded-t-lg">
+        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 rounded-t-lg flex items-center justify-between">
           <h3 className="text-gray-700 text-sm font-medium">
             Screenshot captured at {media.timestamp}
+            {hasAnnotations && (
+              <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {media.annotations?.length || 0} annotation{media.annotations?.length !== 1 ? 's' : ''}
+              </span>
+            )}
           </h3>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleOpenAnnotation(media)}
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              title="Annotate screenshot"
+            >
+              <Edit3 className="w-4 h-4 mr-1" />
+              {hasAnnotations ? 'Edit' : 'Annotate'}
+            </button>
+            <div className=" top-3 right-3 z-10">
+              <input
+                type="checkbox"
+                checked={media.selected}
+                onChange={() => {}} // TODO: Add selection handler
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+            </div>
+          </div>
         </div>
         
         {/* Screenshot Image */}
         <div className="p-4">
           <img 
-            src={media.src} 
+            src={displaySrc} 
             alt="Captured Screenshot" 
             className="w-full h-auto rounded-lg border border-gray-200"
           />
@@ -544,6 +647,7 @@ export function CapturedSection({
                           onChange={(e) => setSummary(e.target.value)}
                           className="flex-1 px-3 py-2 text-sm border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded"
                           placeholder="Summary"
+                          ref={summaryInputRef}
                         />
                         <Button
                           variant="ghost"
@@ -738,7 +842,7 @@ Quick Environment URL: https://live.browserstack.com/dashboard#os=OS+X&os_versio
                           Create another
                         </label>
                       </div>
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={handleCreateButtonClick}>
                         Create
                       </Button>
                     </div>
@@ -802,6 +906,17 @@ Quick Environment URL: https://live.browserstack.com/dashboard#os=OS+X&os_versio
         logs={loadedLogContent || logContent}
         projectKey={jiraProjectData?.project?.key || 'PMT'}
       />
+
+      {/* Annotation Canvas */}
+      {showAnnotationCanvas && currentAnnotatingMedia && (
+        <AnnotationCanvas
+          imageSrc={currentAnnotatingMedia.src}
+          annotations={annotations}
+          onAnnotationsChange={handleAnnotationChange}
+          onSave={handleSaveAnnotation}
+          onClose={handleCloseAnnotation}
+        />
+      )}
     </div>
   );
 }
