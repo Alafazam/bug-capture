@@ -48,9 +48,11 @@ export const { auth, handlers } = NextAuth({
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: '/login',
+    error: '/login',
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -68,16 +70,26 @@ export const { auth, handlers } = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Allow NextAuth to handle redirects naturally
-      return url;
+      // Handle redirects more robustly
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`;
+      } else if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      return baseUrl;
     },
   },
   events: {
     async signIn({ user }) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { lastLoginAt: new Date() },
-      });
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        });
+      } catch (error) {
+        console.error('Error updating last login:', error);
+      }
     },
   },
+  debug: process.env.NODE_ENV === 'development',
 });

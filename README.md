@@ -19,10 +19,20 @@ A comprehensive bug capture and testing platform for cross-browser testing and i
 
    Create a `.env.local` file in your project root with the following variables:
    ```env
-   # Jira Configuration
-   JIRA_URL=https://your-company.atlassian.net/
-   JIRA_EMAIL=your-email@company.com
-   JIRA_API_TOKEN=your-api-token
+   # NextAuth Configuration (REQUIRED for production)
+   NEXTAUTH_SECRET=your-secret-key-here-make-it-long-and-random
+   NEXTAUTH_URL=https://your-domain.com
+   
+   # Database Configuration
+   DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+   
+   # Jira Configuration (Optional)
+   NEXT_PUBLIC_JIRA_URL=https://your-company.atlassian.net/
+   NEXT_PUBLIC_JIRA_EMAIL=your-email@company.com
+   NEXT_PUBLIC_JIRA_API_TOKEN=your-api-token
+   
+   # OpenAI Integration (Optional)
+   OPENAI_API_KEY=your-openai-api-key
    ```
 
    To get your Jira API token:
@@ -71,7 +81,25 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Production Deployment
+
+### Environment Variables for Production
+
+When deploying to production, make sure to set these **REQUIRED** environment variables:
+
+1. **NEXTAUTH_SECRET**: A long, random string used to encrypt session tokens
+2. **NEXTAUTH_URL**: Your production domain (e.g., `https://your-app.vercel.app`)
+
+### Troubleshooting Login Issues
+
+If you encounter "No resume URL" errors or login redirect issues in production:
+
+1. **Check Environment Variables**: Ensure `NEXTAUTH_SECRET` and `NEXTAUTH_URL` are properly set
+2. **Clear Browser Cache**: Clear cookies and local storage
+3. **Check Console Logs**: Look for authentication-related errors in browser console
+4. **Verify Database Connection**: Ensure your production database is accessible
+
+### Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 

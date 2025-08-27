@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get('returnTo') || '/bug-capture';
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,19 +29,30 @@ export default function LoginPage() {
     const password = formData.get('password') as string;
 
     try {
+      console.log('Attempting sign in...');
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
+        callbackUrl: '/bug-capture',
       });
 
+      console.log('Sign in result:', result);
+
       if (result?.error) {
+        console.error('Sign in error:', result.error);
         setError('Invalid email or password');
       } else if (result?.ok) {
-        // Successful login - redirect to bug capture
-        router.push('/bug-capture');
-      }
+              console.log('Sign in successful, redirecting...');
+      // Use window.location for more reliable redirect in production
+      window.location.href = returnTo;
+    } else {
+      console.log('Sign in completed but no result');
+      // Fallback redirect
+      window.location.href = returnTo;
+    }
     } catch (err) {
+      console.error('Sign in exception:', err);
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
