@@ -9,6 +9,7 @@ import { CapturedSection } from "./components/captured-section";
 import { fetchJiraProjectFields, type JiraFieldsResponse } from "@/lib/utils/jira-api";
 import { CapturedMedia } from "@/types/common";
 import { CheckCircle, Clock, FileText, User, Tag, AlertCircle } from "lucide-react";
+import { Analytics } from '@vercel/analytics/next';
 
 // Remove this interface since we're importing it from types/common.ts
 
@@ -480,6 +481,7 @@ export default function BugCapturePage() {
           </div>
         </div>
       )}
+      {process.env.NODE_ENV === 'production' && <Analytics />}
     </div>
   );
 }
