@@ -10,6 +10,7 @@ import { fetchJiraProjectFields, type JiraFieldsResponse } from "@/lib/utils/jir
 import { CapturedMedia } from "@/types/common";
 import { CheckCircle, Clock, FileText, User, Tag, AlertCircle } from "lucide-react";
 import { Analytics } from '@vercel/analytics/next';
+import { toast } from "sonner";
 
 // Remove this interface since we're importing it from types/common.ts
 
@@ -35,7 +36,6 @@ export default function BugCapturePage() {
   const [jiraError, setJiraError] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<string>("PMT");
   const [screenshotStartTime, setScreenshotStartTime] = useState<number | null>(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [timeTaken, setTimeTaken] = useState<number>(0);
   const [formData, setFormData] = useState<any>(null);
 
@@ -214,7 +214,59 @@ export default function BugCapturePage() {
       const timeElapsed = Math.round((endTime - screenshotStartTime) / 1000); // Convert to seconds
       setTimeTaken(timeElapsed);
       setFormData(formData);
-      setShowSuccessModal(true);
+      
+      // Generate a mock Jira ID
+      const mockJiraId = `${formData.project}-${Math.floor(Math.random() * 1000) + 100}`;
+      
+      // Lightweight GTM tracking (prototype - just console log)
+      console.log('GTM Event:', {
+        event: 'jira_issue_created',
+        jira_id: mockJiraId,
+        time_taken_seconds: timeElapsed,
+        project: formData.project,
+        issue_type: formData.issueType,
+        priority: formData.priority
+      });
+      
+      // Show success toast
+      toast.success(
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+            <span className="font-semibold">Jira Issue Created Successfully!</span>
+          </div>
+          <div className="text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <span>Issue ID:</span>
+              <a 
+                href={`https://your-jira-instance.atlassian.net/browse/${mockJiraId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono font-semibold text-blue-600 hover:text-blue-800 underline"
+              >
+                {mockJiraId}
+              </a>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(mockJiraId);
+                  toast.success('Jira ID copied to clipboard!', { duration: 2000 });
+                }}
+                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                title="Copy Jira ID"
+              >
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+            <div>Created in <span className="font-semibold text-green-600">{timeElapsed} seconds</span> ⚡</div>
+          </div>
+        </div>,
+        {
+          duration: 5000,
+          description: `Prototype mode - no actual Jira issue was created`
+        }
+      );
     }
   };
 
@@ -360,127 +412,7 @@ export default function BugCapturePage() {
         )}
       </div>
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-8 h-8 text-white" />
-                  <div>
-                    <h2 className="text-xl font-bold text-white">🎉 Jira Issue Created Successfully!</h2>
-                    <p className="text-green-100 text-sm">Your bug report has been submitted</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowSuccessModal(false)}
-                  className="text-white hover:text-green-100 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
 
-            {/* Content */}
-            <div className="p-6">
-              {/* Time Taken */}
-              <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-center space-x-3">
-                  <Clock className="w-6 h-6 text-blue-600" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-blue-900">
-                      ⚡ Lightning Fast Bug Reporting!
-                    </h3>
-                    <p className="text-blue-700">
-                      You created this Jira issue in just <span className="font-bold text-blue-900">{timeTaken} seconds</span> from screenshot to submission!
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Form Data Summary */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <FileText className="w-5 h-5 mr-2" />
-                  Issue Details
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Summary */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2">Summary</h4>
-                    <p className="text-gray-900">{formData?.summary || 'No summary provided'}</p>
-                  </div>
-
-                  {/* Project */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
-                      <Tag className="w-4 h-4 mr-1" />
-                      Project
-                    </h4>
-                    <p className="text-gray-900">{formData?.project || 'PMT'}</p>
-                  </div>
-
-                  {/* Issue Type */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2">Issue Type</h4>
-                    <p className="text-gray-900">{formData?.issueType || 'Not specified'}</p>
-                  </div>
-
-                  {/* Priority */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2">Priority</h4>
-                    <p className="text-gray-900">{formData?.priority || 'Not specified'}</p>
-                  </div>
-
-                  {/* Status */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2">Status</h4>
-                    <p className="text-gray-900">{formData?.status || 'Not specified'}</p>
-                  </div>
-
-                  {/* Assignee */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
-                      <User className="w-4 h-4 mr-1" />
-                      Assignee
-                    </h4>
-                    <p className="text-gray-900">{formData?.assignee || 'Unassigned'}</p>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-700 mb-2">Description</h4>
-                  <p className="text-gray-900 whitespace-pre-wrap">
-                    {formData?.description || 'No description provided'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>This is a mockup - no actual Jira issue was created</span>
-                  </div>
-                  <button
-                    onClick={() => setShowSuccessModal(false)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       {process.env.NODE_ENV === 'production' && <Analytics />}
     </div>
   );

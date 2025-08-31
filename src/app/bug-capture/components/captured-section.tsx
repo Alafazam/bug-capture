@@ -57,6 +57,7 @@ export function CapturedSection({
   const [showAnnotationCanvas, setShowAnnotationCanvas] = useState(false);
   const [currentAnnotatingMedia, setCurrentAnnotatingMedia] = useState<CapturedMedia | null>(null);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [imageContext, setImageContext] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const summaryInputRef = useRef<HTMLInputElement>(null);
 
@@ -224,9 +225,20 @@ export function CapturedSection({
     setIsAIPopupOpen(true);
   };
 
+  // Get context from captured media
+  const getMediaContext = () => {
+    const contextItems = capturedMedia
+      .filter(media => media.context && media.context.trim().length > 0)
+      .map(media => `${media.type}: ${media.context}`)
+      .join('\n');
+    
+    return contextItems;
+  };
+
   const handleApproveSuggestions = (suggestions: { title: string; summary: string }) => {
     setSummary(suggestions.title);
-    setDescription(suggestions.summary);
+    // Unescape newlines in the summary before setting it
+    setDescription(suggestions.summary.replace(/\\n/g, '\n'));
     setIsAIPopupOpen(false);
   };
 
@@ -238,6 +250,7 @@ export function CapturedSection({
   const handleOpenAnnotation = (media: CapturedMedia) => {
     setCurrentAnnotatingMedia(media);
     setAnnotations(media.annotations || []);
+    setImageContext(media.context || ''); // Load existing context if any
     setShowAnnotationCanvas(true);
   };
 
@@ -247,11 +260,12 @@ export function CapturedSection({
 
   const handleSaveAnnotation = (annotatedImageDataUrl: string) => {
     if (currentAnnotatingMedia) {
-      // Update the media with annotations and annotated image
+      // Update the media with annotations, annotated image, and context
       const updatedMedia = {
         ...currentAnnotatingMedia,
         annotations: annotations,
-        annotatedSrc: annotatedImageDataUrl
+        annotatedSrc: annotatedImageDataUrl,
+        context: imageContext.trim() // Save the context text
       };
       
       // Update the captured media list
@@ -265,6 +279,7 @@ export function CapturedSection({
       setShowAnnotationCanvas(false);
       setCurrentAnnotatingMedia(null);
       setAnnotations([]);
+      setImageContext('');
     }
   };
 
@@ -272,6 +287,7 @@ export function CapturedSection({
     setShowAnnotationCanvas(false);
     setCurrentAnnotatingMedia(null);
     setAnnotations([]);
+    setImageContext('');
   };
 
   const handleCreateButtonClick = () => {
@@ -460,6 +476,7 @@ export function CapturedSection({
 
   const renderScreenshot = (media: CapturedMedia) => {
     const hasAnnotations = media.annotations && media.annotations.length > 0;
+    const hasContext = media.context && media.context.trim().length > 0;
     const displaySrc = media.annotatedSrc || media.src;
     
     return (
@@ -471,11 +488,18 @@ export function CapturedSection({
         <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 rounded-t-lg flex items-center justify-between">
           <h3 className="text-gray-700 text-sm font-medium">
             Screenshot captured at {media.timestamp}
-            {hasAnnotations && (
-              <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {media.annotations?.length || 0} annotation{media.annotations?.length !== 1 ? 's' : ''}
-              </span>
-            )}
+            <div className="flex items-center gap-2 mt-1">
+              {hasAnnotations && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {media.annotations?.length || 0} annotation{media.annotations?.length !== 1 ? 's' : ''}
+                </span>
+              )}
+              {hasContext && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Has context
+                </span>
+              )}
+            </div>
           </h3>
           <div className="flex items-center gap-2">
             <button
@@ -504,6 +528,14 @@ export function CapturedSection({
             alt="Captured Screenshot" 
             className="w-full h-auto rounded-lg border border-gray-200"
           />
+          
+          {/* Context Display */}
+          {hasContext && (
+            <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Context</h4>
+              <p className="text-sm text-gray-600">{media.context}</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -905,6 +937,7 @@ Quick Environment URL: https://live.browserstack.com/dashboard#os=OS+X&os_versio
         onApprove={handleApproveSuggestions}
         logs={loadedLogContent || logContent}
         projectKey={jiraProjectData?.project?.key || 'PMT'}
+        mediaContext={getMediaContext()}
       />
 
       {/* Annotation Canvas */}
@@ -915,6 +948,8 @@ Quick Environment URL: https://live.browserstack.com/dashboard#os=OS+X&os_versio
           onAnnotationsChange={handleAnnotationChange}
           onSave={handleSaveAnnotation}
           onClose={handleCloseAnnotation}
+          context={imageContext}
+          onContextChange={setImageContext}
         />
       )}
     </div>

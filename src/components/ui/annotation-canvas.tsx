@@ -37,6 +37,8 @@ interface AnnotationCanvasProps {
   onAnnotationsChange: (annotations: Annotation[]) => void;
   onSave?: (annotatedImageDataUrl: string) => void;
   onClose?: () => void;
+  context?: string;
+  onContextChange?: (context: string) => void;
 }
 
 const COLORS = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ff8800', '#8800ff'];
@@ -47,7 +49,9 @@ export function AnnotationCanvas({
   annotations,
   onAnnotationsChange,
   onSave,
-  onClose
+  onClose,
+  context = '',
+  onContextChange
 }: AnnotationCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -506,6 +510,24 @@ export function AnnotationCanvas({
                 tabIndex={0}
               />
             </div>
+            
+            {/* Context Input */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Image Context (Optional)
+              </label>
+              <textarea
+                value={context}
+                onChange={(e) => onContextChange?.(e.target.value)}
+                placeholder="Add context about this image to help create better Jira descriptions (e.g., 'This shows the login error on mobile', 'Payment form validation issue')"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                rows={3}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This context will be used to improve AI-generated Jira issue descriptions
+              </p>
+            </div>
+            
             {/* Instructions */}
             <div className="mt-4 text-sm text-gray-600">
               <p><strong>Instructions:</strong></p>

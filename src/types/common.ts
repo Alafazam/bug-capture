@@ -474,6 +474,7 @@ export interface CapturedMedia {
   selected: boolean;
   annotations?: Annotation[];
   annotatedSrc?: string; // URL of the annotated image
+  context?: string; // User-provided context about the image
 }
 
 export interface AnnotationState {

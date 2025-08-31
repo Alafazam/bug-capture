@@ -1,0 +1,554 @@
+{
+  "northStarMetric": {
+    "percentage": 15.0,
+    "trend": [12.5, 13.2, 14.1, 14.8, 15.0, 15.2, 15.0],
+    "weekOverWeek": 1.3,
+    "description": "% of Live sessions post-capture, resulting in a Jira ticket filed within 120 seconds, with ≥80% AI-generated content accepted as-is"
+  },
+  "funnel": {
+    "steps": [
+      {
+        "name": "Live sessions (total)",
+        "count": 20000,
+        "conversion": 100,
+        "color": "#3b82f6",
+        "description": "Total live sessions captured",
+        "weeklyData": [
+          { "week": "Week 1", "count": 18500, "conversion": 100 },
+          { "week": "Week 2", "count": 19200, "conversion": 100 },
+          { "week": "Week 3", "count": 19800, "conversion": 100 },
+          { "week": "Week 4", "count": 20100, "conversion": 100 },
+          { "week": "Week 5", "count": 20500, "conversion": 100 },
+          { "week": "Week 6", "count": 20800, "conversion": 100 },
+          { "week": "Week 7", "count": 20000, "conversion": 100 }
+        ]
+      },
+      {
+        "name": "Sessions with capture (post-capture)",
+        "count": 10000,
+        "conversion": 50,
+        "color": "#06b6d4",
+        "description": "Sessions that completed capture process",
+        "weeklyData": [
+          { "week": "Week 1", "count": 9200, "conversion": 49.7 },
+          { "week": "Week 2", "count": 9600, "conversion": 50.0 },
+          { "week": "Week 3", "count": 9900, "conversion": 50.0 },
+          { "week": "Week 4", "count": 10100, "conversion": 50.2 },
+          { "week": "Week 5", "count": 10300, "conversion": 50.2 },
+          { "week": "Week 6", "count": 10400, "conversion": 50.0 },
+          { "week": "Week 7", "count": 10000, "conversion": 50.0 }
+        ]
+      },
+      {
+        "name": "Capture → Jira modal opened",
+        "count": 6000,
+        "conversion": 30,
+        "color": "#10b981",
+        "description": "Users who opened Jira ticket creation modal",
+        "weeklyData": [
+          { "week": "Week 1", "count": 5400, "conversion": 29.2 },
+          { "week": "Week 2", "count": 5700, "conversion": 29.7 },
+          { "week": "Week 3", "count": 5900, "conversion": 29.8 },
+          { "week": "Week 4", "count": 6100, "conversion": 30.3 },
+          { "week": "Week 5", "count": 6200, "conversion": 30.2 },
+          { "week": "Week 6", "count": 6300, "conversion": 30.3 },
+          { "week": "Week 7", "count": 6000, "conversion": 30.0 }
+        ]
+      },
+      {
+        "name": "AI draft generated",
+        "count": 6000,
+        "conversion": 30,
+        "color": "#f59e0b",
+        "description": "AI successfully generated ticket draft",
+        "weeklyData": [
+          { "week": "Week 1", "count": 5400, "conversion": 29.2 },
+          { "week": "Week 2", "count": 5700, "conversion": 29.7 },
+          { "week": "Week 3", "count": 5900, "conversion": 29.8 },
+          { "week": "Week 4", "count": 6100, "conversion": 30.3 },
+          { "week": "Week 5", "count": 6200, "conversion": 30.2 },
+          { "week": "Week 6", "count": 6300, "conversion": 30.3 },
+          { "week": "Week 7", "count": 6000, "conversion": 30.0 }
+        ]
+      },
+      {
+        "name": "Ticket filed (any)",
+        "count": 4500,
+        "conversion": 22.5,
+        "color": "#ef4444",
+        "description": "Tickets actually filed to Jira",
+        "weeklyData": [
+          { "week": "Week 1", "count": 4050, "conversion": 21.9 },
+          { "week": "Week 2", "count": 4275, "conversion": 22.3 },
+          { "week": "Week 3", "count": 4425, "conversion": 22.3 },
+          { "week": "Week 4", "count": 4575, "conversion": 22.8 },
+          { "week": "Week 5", "count": 4650, "conversion": 22.7 },
+          { "week": "Week 6", "count": 4725, "conversion": 22.7 },
+          { "week": "Week 7", "count": 4500, "conversion": 22.5 }
+        ]
+      },
+      {
+        "name": "North Star (filed <120s, ≥80% AI accepted)",
+        "count": 3000,
+        "conversion": 15.0,
+        "color": "#8b5cf6",
+        "description": "Tickets meeting North Star criteria",
+        "weeklyData": [
+          { "week": "Week 1", "count": 2700, "conversion": 14.6 },
+          { "week": "Week 2", "count": 2850, "conversion": 14.8 },
+          { "week": "Week 3", "count": 2950, "conversion": 14.9 },
+          { "week": "Week 4", "count": 3050, "conversion": 15.2 },
+          { "week": "Week 5", "count": 3100, "conversion": 15.1 },
+          { "week": "Week 6", "count": 3150, "conversion": 15.1 },
+          { "week": "Week 7", "count": 3000, "conversion": 15.0 }
+        ]
+      }
+    ]
+  },
+  "timeBuckets": {
+    "ranges": [
+      {
+        "range": "<60s",
+        "count": 1200,
+        "percentage": 26.7,
+        "color": "#10b981",
+        "weeklyData": [
+          { "week": "Week 1", "count": 1080, "percentage": 26.7 },
+          { "week": "Week 2", "count": 1140, "percentage": 26.7 },
+          { "week": "Week 3", "count": 1180, "percentage": 26.7 },
+          { "week": "Week 4", "count": 1220, "percentage": 26.7 },
+          { "week": "Week 5", "count": 1240, "percentage": 26.7 },
+          { "week": "Week 6", "count": 1260, "percentage": 26.7 },
+          { "week": "Week 7", "count": 1200, "percentage": 26.7 }
+        ]
+      },
+      {
+        "range": "60–120s",
+        "count": 1800,
+        "percentage": 40.0,
+        "color": "#3b82f6",
+        "weeklyData": [
+          { "week": "Week 1", "count": 1620, "percentage": 40.0 },
+          { "week": "Week 2", "count": 1710, "percentage": 40.0 },
+          { "week": "Week 3", "count": 1770, "percentage": 40.0 },
+          { "week": "Week 4", "count": 1830, "percentage": 40.0 },
+          { "week": "Week 5", "count": 1860, "percentage": 40.0 },
+          { "week": "Week 6", "count": 1890, "percentage": 40.0 },
+          { "week": "Week 7", "count": 1800, "percentage": 40.0 }
+        ]
+      },
+      {
+        "range": "120–300s",
+        "count": 1000,
+        "percentage": 22.2,
+        "color": "#f59e0b",
+        "weeklyData": [
+          { "week": "Week 1", "count": 900, "percentage": 22.2 },
+          { "week": "Week 2", "count": 950, "percentage": 22.2 },
+          { "week": "Week 3", "count": 985, "percentage": 22.2 },
+          { "week": "Week 4", "count": 1015, "percentage": 22.2 },
+          { "week": "Week 5", "count": 1035, "percentage": 22.2 },
+          { "week": "Week 6", "count": 1050, "percentage": 22.2 },
+          { "week": "Week 7", "count": 1000, "percentage": 22.2 }
+        ]
+      },
+      {
+        "range": "300s+",
+        "count": 500,
+        "percentage": 11.1,
+        "color": "#ef4444",
+        "weeklyData": [
+          { "week": "Week 1", "count": 450, "percentage": 11.1 },
+          { "week": "Week 2", "count": 475, "percentage": 11.1 },
+          { "week": "Week 3", "count": 492, "percentage": 11.1 },
+          { "week": "Week 4", "count": 508, "percentage": 11.1 },
+          { "week": "Week 5", "count": 518, "percentage": 11.1 },
+          { "week": "Week 6", "count": 525, "percentage": 11.1 },
+          { "week": "Week 7", "count": 500, "percentage": 11.1 }
+        ]
+      }
+    ],
+    "total": 4500,
+    "weeklyTotals": [
+      { "week": "Week 1", "total": 4050 },
+      { "week": "Week 2", "total": 4275 },
+      { "week": "Week 3", "total": 4425 },
+      { "week": "Week 4", "total": 4575 },
+      { "week": "Week 5", "total": 4650 },
+      { "week": "Week 6", "total": 4725 },
+      { "week": "Week 7", "total": 4500 }
+    ]
+  },
+  "aiAcceptance": {
+    "categories": [
+      {
+        "range": "100% accepted as-is",
+        "percentage": 35.0,
+        "trend": [32, 33, 34, 35, 35, 35, 35],
+        "color": "#10b981",
+        "weeklyData": [
+          { "week": "Week 1", "percentage": 32, "count": 1296 },
+          { "week": "Week 2", "percentage": 33, "count": 1411 },
+          { "week": "Week 3", "percentage": 34, "count": 1505 },
+          { "week": "Week 4", "percentage": 35, "count": 1601 },
+          { "week": "Week 5", "percentage": 35, "count": 1628 },
+          { "week": "Week 6", "percentage": 35, "count": 1654 },
+          { "week": "Week 7", "percentage": 35, "count": 1575 }
+        ]
+      },
+      {
+        "range": "80–99%",
+        "percentage": 45.0,
+        "trend": [47, 46, 45, 45, 45, 45, 45],
+        "color": "#3b82f6",
+        "weeklyData": [
+          { "week": "Week 1", "percentage": 47, "count": 1904 },
+          { "week": "Week 2", "percentage": 46, "count": 1967 },
+          { "week": "Week 3", "percentage": 45, "count": 1991 },
+          { "week": "Week 4", "percentage": 45, "count": 2059 },
+          { "week": "Week 5", "percentage": 45, "count": 2093 },
+          { "week": "Week 6", "percentage": 45, "count": 2126 },
+          { "week": "Week 7", "percentage": 45, "count": 2025 }
+        ]
+      },
+      {
+        "range": "50–80%",
+        "percentage": 15.0,
+        "trend": [16, 16, 15, 15, 15, 15, 15],
+        "color": "#f59e0b",
+        "weeklyData": [
+          { "week": "Week 1", "percentage": 16, "count": 648 },
+          { "week": "Week 2", "percentage": 16, "count": 684 },
+          { "week": "Week 3", "percentage": 15, "count": 664 },
+          { "week": "Week 4", "percentage": 15, "count": 686 },
+          { "week": "Week 5", "percentage": 15, "count": 698 },
+          { "week": "Week 6", "percentage": 15, "count": 709 },
+          { "week": "Week 7", "percentage": 15, "count": 675 }
+        ]
+      },
+      {
+        "range": "<50%",
+        "percentage": 5.0,
+        "trend": [5, 5, 6, 5, 5, 5, 5],
+        "color": "#ef4444",
+        "weeklyData": [
+          { "week": "Week 1", "percentage": 5, "count": 202 },
+          { "week": "Week 2", "percentage": 5, "count": 214 },
+          { "week": "Week 3", "percentage": 6, "count": 265 },
+          { "week": "Week 4", "percentage": 5, "count": 229 },
+          { "week": "Week 5", "percentage": 5, "count": 233 },
+          { "week": "Week 6", "percentage": 5, "count": 236 },
+          { "week": "Week 7", "percentage": 5, "count": 225 }
+        ]
+      }
+    ],
+    "weeks": ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7"],
+    "weeklyTotals": [
+      { "week": "Week 1", "total": 4050 },
+      { "week": "Week 2", "total": 4275 },
+      { "week": "Week 3", "total": 4425 },
+      { "week": "Week 4", "total": 4575 },
+      { "week": "Week 5", "total": 4650 },
+      { "week": "Week 6", "total": 4725 },
+      { "week": "Week 7", "total": 4500 }
+    ]
+  },
+  "qualityMetrics": {
+    "avgTimeToTicket": 74,
+    "mandatoryAttachments": 95,
+    "noClarificationNeeded": 87,
+    "flaggedForExtraInfo": 10,
+    "csatScore": 4.2,
+    "csatResponses": 1200,
+    "csatBreakdown": {
+      "5": 45,
+      "4": 35,
+      "3": 15,
+      "2": 3,
+      "1": 2
+    }
+  },
+  "topEditReasons": [
+    {
+      "reason": "Wanted to clarify repro steps",
+      "count": 450,
+      "percentage": 30.0,
+      "color": "#3b82f6"
+    },
+    {
+      "reason": "Summary too vague",
+      "count": 300,
+      "percentage": 20.0,
+      "color": "#f59e0b"
+    },
+    {
+      "reason": "Product-specific fields missing",
+      "count": 225,
+      "percentage": 15.0,
+      "color": "#ef4444"
+    },
+    {
+      "reason": "Priority level adjustment",
+      "count": 180,
+      "percentage": 12.0,
+      "color": "#8b5cf6"
+    },
+    {
+      "reason": "Component assignment",
+      "count": 150,
+      "percentage": 10.0,
+      "color": "#06b6d4"
+    }
+  ],
+  "cohorts": {
+    "organizations": {
+      "top5": [
+        {
+          "name": "Engineering Team Alpha",
+          "adoption": 28.5,
+          "rank": 1,
+          "sessions": 2500,
+          "color": "#10b981"
+        },
+        {
+          "name": "QA Department Beta",
+          "adoption": 24.2,
+          "rank": 2,
+          "sessions": 1800,
+          "color": "#3b82f6"
+        },
+        {
+          "name": "Product Team Gamma",
+          "adoption": 21.8,
+          "rank": 3,
+          "sessions": 1200,
+          "color": "#f59e0b"
+        },
+        {
+          "name": "DevOps Team Delta",
+          "adoption": 19.5,
+          "rank": 4,
+          "sessions": 900,
+          "color": "#8b5cf6"
+        },
+        {
+          "name": "Support Team Epsilon",
+          "adoption": 17.2,
+          "rank": 5,
+          "sessions": 800,
+          "color": "#06b6d4"
+        }
+      ],
+      "bottom5": [
+        {
+          "name": "Marketing Team Zeta",
+          "adoption": 5.2,
+          "rank": 15,
+          "sessions": 200,
+          "color": "#ef4444"
+        },
+        {
+          "name": "Sales Team Eta",
+          "adoption": 4.8,
+          "rank": 14,
+          "sessions": 150,
+          "color": "#f97316"
+        },
+        {
+          "name": "HR Team Theta",
+          "adoption": 3.5,
+          "rank": 13,
+          "sessions": 100,
+          "color": "#ec4899"
+        },
+        {
+          "name": "Finance Team Iota",
+          "adoption": 2.1,
+          "rank": 12,
+          "sessions": 80,
+          "color": "#a855f7"
+        },
+        {
+          "name": "Legal Team Kappa",
+          "adoption": 1.8,
+          "rank": 11,
+          "sessions": 60,
+          "color": "#6366f1"
+        }
+      ]
+    },
+    "personas": {
+      "powerUsers": {
+        "percentage": 65,
+        "count": 6500,
+        "avgAdoption": 22.5,
+        "color": "#10b981"
+      },
+      "newUsers": {
+        "percentage": 35,
+        "count": 3500,
+        "avgAdoption": 8.2,
+        "color": "#3b82f6"
+      }
+    },
+    "browsers": [
+      {
+        "name": "Chrome",
+        "percentage": 65,
+        "adoption": 18.5,
+        "color": "#3b82f6"
+      },
+      {
+        "name": "Firefox",
+        "percentage": 20,
+        "adoption": 15.2,
+        "color": "#f59e0b"
+      },
+      {
+        "name": "Safari",
+        "percentage": 12,
+        "adoption": 12.8,
+        "color": "#10b981"
+      },
+      {
+        "name": "Edge",
+        "percentage": 3,
+        "adoption": 10.5,
+        "color": "#8b5cf6"
+      }
+    ],
+    "operatingSystems": [
+      {
+        "name": "Windows",
+        "percentage": 55,
+        "adoption": 16.8,
+        "color": "#3b82f6"
+      },
+      {
+        "name": "macOS",
+        "percentage": 35,
+        "adoption": 19.2,
+        "color": "#10b981"
+      },
+      {
+        "name": "Linux",
+        "percentage": 8,
+        "adoption": 14.5,
+        "color": "#f59e0b"
+      },
+      {
+        "name": "Other",
+        "percentage": 2,
+        "adoption": 8.2,
+        "color": "#8b5cf6"
+      }
+    ],
+    "projects": [
+      {
+        "name": "Web Application",
+        "percentage": 40,
+        "adoption": 20.5,
+        "color": "#3b82f6"
+      },
+      {
+        "name": "Mobile App",
+        "percentage": 30,
+        "adoption": 18.2,
+        "color": "#10b981"
+      },
+      {
+        "name": "API Services",
+        "percentage": 20,
+        "adoption": 15.8,
+        "color": "#f59e0b"
+      },
+      {
+        "name": "Infrastructure",
+        "percentage": 10,
+        "adoption": 12.5,
+        "color": "#8b5cf6"
+      }
+    ]
+  },
+  "technicalMetrics": {
+    "apiSubmissionSuccessRate": 99.8,
+    "aiDraftLatency": {
+      "p50": 0.8,
+      "p95": 1.2,
+      "p99": 2.1
+    },
+    "uploadSuccessRate": 98.9,
+    "systemHealth": {
+      "database": {
+        "status": "healthy",
+        "uptime": 99.95,
+        "responseTime": 45
+      },
+      "api": {
+        "status": "operational",
+        "uptime": 99.92,
+        "responseTime": 120
+      },
+      "storage": {
+        "status": "warning",
+        "usage": 75,
+        "available": "2.5TB"
+      }
+    }
+  },
+  "filters": {
+    "timeRanges": [
+      "Last 7 days",
+      "Last 30 days",
+      "Last 90 days",
+      "Last 6 months",
+      "Last year"
+    ],
+    "organizations": [
+      "All Organizations",
+      "Engineering Team Alpha",
+      "QA Department Beta",
+      "Product Team Gamma",
+      "DevOps Team Delta",
+      "Support Team Epsilon"
+    ],
+    "projects": [
+      "All Projects",
+      "Web Application",
+      "Mobile App",
+      "API Services",
+      "Infrastructure"
+    ],
+    "userPersonas": [
+      "All Users",
+      "Power Users",
+      "New Users"
+    ],
+    "aiModelVersions": [
+      "All Versions",
+      "GPT-4 Turbo",
+      "GPT-4",
+      "Claude-3",
+      "Gemini Pro"
+    ]
+  },
+  "alerts": {
+    "northStarDrop": {
+      "triggered": false,
+      "threshold": 10,
+      "currentDrop": 2.1
+    },
+    "aiLatencySpike": {
+      "triggered": false,
+      "threshold": 2.0,
+      "currentLatency": 1.2
+    },
+    "apiErrorRate": {
+      "triggered": false,
+      "threshold": 1.0,
+      "currentRate": 0.2
+    }
+  },
+  "lastUpdated": "2024-01-15T10:30:00Z",
+  "dataRefreshInterval": 300
+}
