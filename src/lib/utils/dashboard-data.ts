@@ -10,7 +10,7 @@ export function getNorthStarSparklineData(): SparklineData[] {
   const totalLiveSessions = data.funnel.steps[0].weeklyData;
   
   return data.northStarMetric.trend.map((percentage, index) => {
-    const weekLiveSessions = totalLiveSessions[index]?.count || 20000;
+    const weekLiveSessions = totalLiveSessions?.[index]?.count || 20000;
     const absoluteValue = Math.round((percentage / 100) * weekLiveSessions);
     
     return {

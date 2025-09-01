@@ -292,7 +292,7 @@ export function AISuggestionsPopup({
                 <h3 className="text-lg font-medium">Help us improve</h3>
               </div>
               <p className="text-sm text-gray-600 mb-4">
-                What didn't you like about the AI suggestions?
+                What didn&apos;t you like about the AI suggestions?
               </p>
               <Select value={feedbackReason} onValueChange={setFeedbackReason}>
                 <SelectTrigger>

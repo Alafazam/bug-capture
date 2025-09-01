@@ -5,12 +5,25 @@ export interface NorthStarMetric {
   description: string;
 }
 
+export interface WeeklyData {
+  week: string;
+  count: number;
+  conversion: number;
+}
+
+export interface WeeklyTimeData {
+  week: string;
+  count: number;
+  percentage: number;
+}
+
 export interface FunnelStep {
   name: string;
   count: number;
   conversion: number;
   color: string;
   description: string;
+  weeklyData?: WeeklyData[];
 }
 
 export interface FunnelData {
@@ -22,6 +35,7 @@ export interface TimeBucket {
   count: number;
   percentage: number;
   color: string;
+  weeklyData?: WeeklyTimeData[];
 }
 
 export interface TimeBucketsData {

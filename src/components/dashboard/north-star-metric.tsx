@@ -79,15 +79,11 @@ export function NorthStarMetric({ data }: NorthStarMetricProps) {
                 <CartesianGrid stroke="#eee" strokeDasharray="5 5"/>
                 <XAxis 
                   dataKey="name" 
-                  axisLine={true}
-                  tickLine={true}
                   tick={{ fontSize: 10, fill: '#6b7280' }}
                   axisLine={{ stroke: '#e5e7eb' }}
                   tickLine={{ stroke: '#e5e7eb' }}
                 />
                 <YAxis 
-                  axisLine={true}
-                  tickLine={true}
                   tick={{ fontSize: 10, fill: '#6b7280' }}
                   axisLine={{ stroke: '#e5e7eb' }}
                   tickLine={{ stroke: '#e5e7eb' }}
